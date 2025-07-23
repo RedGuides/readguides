@@ -1,0 +1,4 @@
+[submodule "vendor/aqo"]
+	path = vendor/aqo
+	url = https://github.com/Redbot/aqodocs.git
+	branch = readguides

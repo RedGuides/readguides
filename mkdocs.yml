@@ -1,0 +1,104 @@
+site_name: RedGuides
+site_url: https://www.readguides.com
+repo_url: https://github.com/RedGuides/openvanilla
+theme:
+  name: material
+  features:
+    - content.action.edit
+    - search.highlight
+    - search.share
+    - navigation.indexes
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default 
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+extra_css:
+  - stylesheets/extra.css
+  
+hooks:
+  - hooks/mkdocs_hooks.py
+
+plugins:
+  - search
+  - awesome-nav
+  - glightbox
+  - include-markdown
+  - macros
+  - meta
+  - tags
+
+markdown_extensions:
+- abbr
+- admonition
+- attr_list
+- def_list
+- footnotes
+- mdx_math
+- md_in_html
+- meta
+- toc:
+    permalink: true
+- pymdownx.arithmatex:
+    generic: true
+- pymdownx.betterem:
+    smart_enable: all
+- pymdownx.caret
+- pymdownx.critic
+- pymdownx.details
+- pymdownx.emoji:
+    emoji_index: !!python/name:material.extensions.emoji.twemoji
+    emoji_generator: !!python/name:material.extensions.emoji.to_svg
+- pymdownx.highlight:
+    pygments_lang_class: true
+- pymdownx.inlinehilite
+- pymdownx.keys
+- pymdownx.mark
+- pymdownx.smartsymbols
+- pymdownx.snippets:
+    check_paths: true
+    url_download: true
+- pymdownx.superfences:
+    custom_fences:
+      - name: mermaid
+        class: mermaid
+        format: !!python/name:pymdownx.superfences.fence_code_format
+- pymdownx.tabbed:
+    alternate_style: true
+- pymdownx.tasklist:
+    custom_checkbox: true
+- pymdownx.tilde
+
+extra_javascript:
+  - js/random-image.js
+
+exclude_docs: |
+  /projects/macroquest/plugins/community-plugins/
+  /projects/macroquest/plugins/discontinued/
+  /projects/macroquest/main/
+  /projects/macroquest/reference/commands/README.md
+  /projects/macroquest/reference/commands/eq/
+  /projects/aqo/README.md
+  /projects/aqo/main/
+  /projects/aqo/misc/
+  /projects/aqo/aqobot/
+  /projects/aqo/debugger/
+  /projects/aqo/luabard/
+  /projects/aqo/luanecro/
+  /projects/aqo/abilitypicker/
+  /projects/aqo/taskwindow/
+  /projects/aqo/arkanoid/
+  /projects/aqo/wordquest/
+  **/*.deepseek
+  **/*.openai

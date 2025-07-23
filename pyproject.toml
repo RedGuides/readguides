@@ -1,0 +1,46 @@
+[project]
+name = "readguides" 
+version = "0.1.0"
+description = "EverQuest with spice"
+requires-python = ">=3.12" # Or your preferred Python version
+dependencies = [
+  "mkdocs",
+  "mkdocs-material", # Includes many pymdownx extensions and its own tags feature
+  "mkdocs-awesome-nav",
+  "mkdocs-glightbox",
+  "mkdocs-include-markdown-plugin",
+  "mkdocs-macros-plugin",
+  "python-markdown-math",
+  "mkdocs-redirects",
+  "eq_lexers",
+  "mkdocs-gen-files",
+  ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+# This section tells Hatchling what to include if it were to build a wheel.
+# For an MkDocs project, there isn't usually a Python package named directly
+# after the project (e.g., a "readguides" Python module).
+# This configuration helps Hatchling determine what files belong to the project
+# when it performs operations like preparing metadata for an editable install.
+# Paths starting with "/" are relative to your project root.
+include = [
+    "/docs",             # Your main documentation content
+    "/mkdocs.yml",       # Your MkDocs configuration file
+    "/gen_pages.py",     # Your page generation script (if it's at the project root)
+    # Add any other essential top-level files or directories that define your project.
+    # For example, if you have custom hooks: "/mkdocs_hooks.py"
+    # If your gen_pages.py is in a different location, adjust the path accordingly.
+]
+
+[tool.hatch.envs.default]
+description = "Default environment for MkDocs development"
+
+# If you want to use 'uv' as the installer (it's faster)
+# installer = "uv" # ([1](https://hatch.pypa.io/latest/blog/2024/05/02/hatch-v1100/))
+
+# If your gen_pages.py script needs specific packages not already listed,
+# ensure they are in the main [project.dependencies] or here as extra-dependencies.

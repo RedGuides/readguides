@@ -1,0 +1,93 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache directories
+.cache/
+.pytest_cache/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Generated/conversion files
+commands_datamap.json
+datatypes_datamap.json
+top_level_objects_datamap.json
+transformed_commands.json
+wiki_filemap_cache.json
+wikicommand.json
+conversion_results_*.json
+wiki_cleanup_progress_*.json
+
+# One-off Python scripts
+convertcmd.py
+convertcmd_cmd.py
+datamap.py
+main_old_tablesindex.py
+mainexample.py
+wikitodatamapconverter.py
+wiki_cleanup.py
+garbage/*
+
+# Temporary/log files
+failed_response_*.txt
+wiki.txt
+config.js
+*.log
+
+# MkDocs build files (if generated)
+site/
+
+# Project specific ignores
+docs/projects/mq*
+docs/projects/kissassist
+docs/projects/artisansprize
+docs/projects/everquest
+docs/projects/macroquest
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
