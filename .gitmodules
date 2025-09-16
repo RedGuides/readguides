@@ -9,3 +9,6 @@
 [submodule "docs/projects/everquest"]
 	path = docs/projects/everquest
 	url = https://github.com/RedGuides/everquest-docs.git
+[submodule "vendor/kissassist"]
+	path = vendor/kissassist
+	url = https://github.com/RedGuides/kissassist.git
