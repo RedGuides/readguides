@@ -47,40 +47,70 @@ def define_env(env):
             return ""
 
         m = page.meta
+        # Determine if this page is tagged as a plugin
+        tags_value = m.get("tags")
+        if isinstance(tags_value, str):
+            tags_list = [tags_value.strip().lower()]
+        elif isinstance(tags_value, (list, tuple)):
+            tags_list = [str(t).strip().lower() for t in tags_value]
+        else:
+            tags_list = []
+        is_plugin_page = "plugin" in tags_list
         
-        # Collapsible structure - just details element
+        # Use Material's admonition syntax for better styling
+        admonition_type = "abstract" if expanded else "abstract collapsible"
+        
         parts = [
-            f'<details class="info inline end"{" open" if expanded else ""}>',
-            f'  <summary>{html.escape(page.title or "Info")}</summary>',
+            f'???+ {admonition_type} "{html.escape(page.title or "Info")}"',
+            ""  # blank line after title
         ]
 
+        # Tagline with emphasis
         if tagline := m.get("tagline"):
-            parts.append(f"  <p><em>{html.escape(tagline)}</em></p>")
+            parts.append(f"    *{html.escape(tagline)}*")
+            parts.append("")
 
+        # Combine authors and config on one line when both exist
+        info_line_parts = []
         if authors := m.get("authors"):
             if isinstance(authors, str):
                 authors_str = authors
             else:
                 authors_str = ", ".join(authors)
-            parts.append(f"  <p><strong>Authors:</strong> {html.escape(authors_str)}</p>")
+            info_line_parts.append(f"**Authors:** {html.escape(authors_str)}")
 
         if cfg := m.get("config"):
-            parts.append(f"  <p><strong>Config:</strong> <code>{html.escape(cfg)}</code></p>")
+            info_line_parts.append(f"**Config:** =={html.escape(cfg)}==")  # Badge syntax
 
+        if info_line_parts:
+            parts.append(f"    {' • '.join(info_line_parts)}")
+            parts.append("")
+
+        # Links as buttons in a compact format
         link_items = []
         if (url := m.get("resource_link")): 
-            link_items.append(f'📕 <a href="{html.escape(url)}">Resource</a>')
+            link_items.append(f'[:material-book: Resource]({html.escape(url)}){{ .md-button .md-button--primary }}')
+            # Add download link if resource_link contains "redguides" domain
+            if "redguides" in url:
+                if is_plugin_page:
+                    # Replace the download button with a tooltip button for plugins, inferring the plugin name
+                    plugin_name = str(m.get("plugin_name") or m.get("name") or page.title or "plugin").strip().lower()
+                    tooltip_text = f"Included in Very Vanilla by default. In-game, type '/plugin {plugin_name} load' to activate"
+                    link_items.append(f'[:material-download: Download](#){{ .md-button onclick="alert(this.dataset.alert); return false;" data-alert="{html.escape(tooltip_text, quote=True)}" }}')
+                else:
+                    download_url = url.rstrip('/') + '/download'
+                    link_items.append(f'[:material-download: Download]({html.escape(download_url)}){{ .md-button }}')
+        
         if (url := m.get("support_link")):  
-            link_items.append(f'🧑‍🤝‍🧑 <a href="{html.escape(url)}">Support</a>')
+            link_items.append(f'[:material-help-circle: Support]({html.escape(url)}){{ .md-button }}')
         if (url := m.get("repository")):    
-            link_items.append(f'⚙️ <a href="{html.escape(url)}">Git&nbsp;Repo</a>')
+            link_items.append(f'[:material-source-repository: Repo]({html.escape(url)}){{ .md-button }}')
         if (url := m.get("quick_start")):   
-            link_items.append(f'💡 <a href="{html.escape(url)}">Quick&nbsp;Start</a>')
+            link_items.append(f'[:material-rocket-launch: Quick Start]({html.escape(url)}){{ .md-button }}')
 
         if link_items:
-            parts.append(f"  <p><strong>Links:</strong> {' · '.join(link_items)}</p>")
+            parts.append(f"    {' '.join(link_items)}")
 
-        parts.append('</details>')
         return Markup("\n".join(parts))
 
 # == Helper Functions ==
@@ -104,23 +134,8 @@ def read_file(file_path, page, docs_dir_name="docs"): # Add docs_dir_name parame
             "success": True,
             "error": None
         }
-    except FileNotFoundError:
-        # More specific error for file not found
-        project_root_cwd = Path.cwd() # CWD is usually project root for MkDocs
-        expected_path_abs = project_root_cwd / docs_dir_name / file_path
-        error_msg = f"File not found by read_file (called by readMore): '{file_path}'. Expected absolute path: '{expected_path_abs}'"
-        # print(f"DEBUG: {error_msg}") # Uncomment for debugging
-        return {
-            "content": "", "base_dir": None, "doc_url": "#", "success": False, "error": error_msg
-        }
-    except Exception as e:
-        project_root_cwd = Path.cwd()
-        attempted_path_abs = project_root_cwd / docs_dir_name / file_path
-        error_msg = f"Error reading file '{file_path}' (attempted absolute path: '{attempted_path_abs}') in read_file (called by readMore): {e}"
-        # print(f"DEBUG: {error_msg}") # Uncomment for debugging
-        return {
-            "content": "", "base_dir": None, "doc_url": "#", "success": False, "error": error_msg
-        }
+    except Exception:
+        return {"content": "", "base_dir": None, "doc_url": "#", "success": False, "error": None}
 
 # create an mkdocs-style url that's relative to the embedding page
 def relative_link(target_file_path, embedding_page_src_uri, base_dir=None):
@@ -147,13 +162,12 @@ def relative_link(target_file_path, embedding_page_src_uri, base_dir=None):
 # extra sections beyond Members/Forms/Description
 def has_extra_sections(content):
     SECTION_PATTERN = r'^##\s+(.+?)\s*$'
-    target_sections = {"Members", "Forms", "Description", "Associated DataTypes", "DataTypes"}
+    target_sections = {"Syntax", "Members", "Forms", "Description", "Associated DataTypes", "DataTypes", "See also"}
     
     lines = content.split('\n')
-    sections = []
-    in_datatypes_section = False  # Initialize the flag here
+    in_datatypes_section = False
     
-    # Find all section headers and their positions
+    # Find all section headers and check if any are not in target_sections
     for i, line in enumerate(lines):
         if '<!--tlo-datatypes-start-->' in line:
             in_datatypes_section = True
@@ -163,16 +177,8 @@ def has_extra_sections(content):
         if not in_datatypes_section:
             match = re.match(SECTION_PATTERN, line)
             if match:
-                sections.append((i, match.group(1).strip()))
-    
-    # Find last occurrence of target sections
-    last_target_index = -1
-    for idx, (line_num, section) in enumerate(sections):
-        if section in target_sections:
-            last_target_index = idx
-    
-    # Check if there are sections after the last target section
-    if last_target_index != -1 and len(sections) > last_target_index + 1:
-        return True
+                section = match.group(1).strip()
+                if section not in target_sections:
+                    return True
         
     return False

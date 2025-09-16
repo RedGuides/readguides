@@ -1,3 +1,14 @@
+# RG specific hooks
+hooks/rg_hooks.py
+overlap-commands.json
+datatype-inheritance.json
+
+# One-off Python scripts
+garbage/
+
+# MkDocs build files (if generated)
+site/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -41,41 +52,11 @@ MANIFEST
 *.swo
 *~
 
-# Generated/conversion files
-commands_datamap.json
-datatypes_datamap.json
-top_level_objects_datamap.json
-transformed_commands.json
-wiki_filemap_cache.json
-wikicommand.json
-conversion_results_*.json
-wiki_cleanup_progress_*.json
-
-# One-off Python scripts
-convertcmd.py
-convertcmd_cmd.py
-datamap.py
-main_old_tablesindex.py
-mainexample.py
-wikitodatamapconverter.py
-wiki_cleanup.py
-garbage/*
-
 # Temporary/log files
 failed_response_*.txt
 wiki.txt
 config.js
 *.log
-
-# MkDocs build files (if generated)
-site/
-
-# Project specific ignores
-docs/projects/mq*
-docs/projects/kissassist
-docs/projects/artisansprize
-docs/projects/everquest
-docs/projects/macroquest
 
 # OS generated files
 .DS_Store
