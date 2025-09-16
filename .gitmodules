@@ -2,3 +2,10 @@
 	path = vendor/aqo
 	url = https://github.com/Redbot/aqodocs.git
 	branch = readguides
+[submodule "vendor/miscdocs"]
+	path = vendor/miscdocs
+	url = https://github.com/Redbot/miscdocs.git
+	branch = main
+[submodule "docs/projects/everquest"]
+	path = docs/projects/everquest
+	url = https://github.com/RedGuides/everquest-docs.git
