@@ -9,6 +9,288 @@
 [submodule "docs/projects/everquest"]
 	path = docs/projects/everquest
 	url = https://github.com/RedGuides/everquest-docs.git
+	branch = main
 [submodule "vendor/kissassist"]
 	path = vendor/kissassist
 	url = https://github.com/RedGuides/kissassist.git
+	branch = main
+[submodule "docs/projects/macroquest"]
+	path = docs/projects/macroquest
+	url = https://github.com/Redbot/docs.git
+	branch = readguides
+[submodule "vendor/MQ2AASpend"]
+	path = vendor/MQ2AASpend
+	url = https://github.com/RedGuides/MQ2AASpend.git
+	branch = master
+[submodule "vendor/MQ2AdvPath"]
+	path = vendor/MQ2AdvPath
+	url = https://github.com/RedGuides/MQ2AdvPath.git
+	branch = master
+[submodule "vendor/MQ2AutoAccept"]
+	path = vendor/MQ2AutoAccept
+	url = https://github.com/RedGuides/MQ2AutoAccept.git
+	branch = master
+[submodule "vendor/MQ2AutoCamp"]
+	path = vendor/MQ2AutoCamp
+	url = https://github.com/RedGuides/MQ2AutoCamp.git
+	branch = master
+[submodule "vendor/MQ2AutoClaim"]
+	path = vendor/MQ2AutoClaim
+	url = https://github.com/RedGuides/MQ2AutoClaim.git
+	branch = master
+[submodule "vendor/MQ2AutoForage"]
+	path = vendor/MQ2AutoForage
+	url = https://github.com/RedGuides/MQ2AutoForage.git
+	branch = master
+[submodule "vendor/MQ2AutoGroup"]
+	path = vendor/MQ2AutoGroup
+	url = https://github.com/RedGuides/MQ2AutoGroup.git
+	branch = master
+[submodule "vendor/MQ2AutoLoot"]
+	path = vendor/MQ2AutoLoot
+	url = https://github.com/RedGuides/MQ2AutoLoot.git
+	branch = master
+[submodule "vendor/MQ2AutoSize"]
+	path = vendor/MQ2AutoSize
+	url = https://github.com/RedGuides/MQ2AutoSize.git
+	branch = master
+[submodule "vendor/MQ2Bandolier"]
+	path = vendor/MQ2Bandolier
+	url = https://github.com/RedGuides/MQ2Bandolier.git
+	branch = master
+[submodule "vendor/MQ2BardSwap"]
+	path = vendor/MQ2BardSwap
+	url = https://github.com/RedGuides/MQ2BardSwap.git
+	branch = master
+[submodule "vendor/MQ2Boxr"]
+	path = vendor/MQ2Boxr
+	url = https://github.com/RedGuides/MQ2Boxr.git
+	branch = master
+[submodule "vendor/MQ2Cast"]
+	path = vendor/MQ2Cast
+	url = https://github.com/RedGuides/MQ2Cast.git
+	branch = master
+[submodule "vendor/MQ2Clipboard"]
+	path = vendor/MQ2Clipboard
+	url = https://github.com/RedGuides/MQ2Clipboard.git
+	branch = master
+[submodule "vendor/MQ2Collections"]
+	path = vendor/MQ2Collections
+	url = https://github.com/RedGuides/MQ2Collections.git
+	branch = master
+[submodule "vendor/MQ2CPULoad"]
+	path = vendor/MQ2CPULoad
+	url = https://github.com/RedGuides/MQ2CPULoad.git
+	branch = master
+[submodule "vendor/MQ2Cursor"]
+	path = vendor/MQ2Cursor
+	url = https://github.com/RedGuides/MQ2Cursor.git
+	branch = master
+[submodule "vendor/MQ2Debuffs"]
+	path = vendor/MQ2Debuffs
+	url = https://github.com/RedGuides/MQ2Debuffs.git
+	branch = master
+[submodule "vendor/MQ2DPSAdv"]
+	path = vendor/MQ2DPSAdv
+	url = https://github.com/RedGuides/MQ2DPSAdv.git
+	branch = master
+[submodule "vendor/MQ2EQBC"]
+	path = vendor/MQ2EQBC
+	url = https://github.com/RedGuides/MQ2EQBC.git
+	branch = master
+[submodule "vendor/MQ2Events"]
+	path = vendor/MQ2Events
+	url = https://github.com/RedGuides/MQ2Events.git
+	branch = master
+[submodule "vendor/MQ2Exchange"]
+	path = vendor/MQ2Exchange
+	url = https://github.com/RedGuides/MQ2Exchange.git
+	branch = master
+[submodule "vendor/MQ2FarmTest"]
+	path = vendor/MQ2FarmTest
+	url = https://github.com/RedGuides/MQ2FarmTest.git
+	branch = master
+[submodule "vendor/MQ2FeedMe"]
+	path = vendor/MQ2FeedMe
+	url = https://github.com/RedGuides/MQ2FeedMe.git
+	branch = master
+[submodule "vendor/MQ2GroupInfo"]
+	path = vendor/MQ2GroupInfo
+	url = https://github.com/RedGuides/MQ2GroupInfo.git
+	branch = master
+[submodule "vendor/MQ2HUDMove"]
+	path = vendor/MQ2HUDMove
+	url = https://github.com/RedGuides/MQ2HUDMove.git
+	branch = master
+[submodule "vendor/MQItemColor"]
+	path = vendor/MQItemColor
+	url = https://github.com/RedGuides/MQItemColor.git
+	branch = main
+[submodule "vendor/MQ2ItemScore"]
+	path = vendor/MQ2ItemScore
+	url = https://github.com/RedGuides/MQ2ItemScore.git
+	branch = master
+[submodule "vendor/MQ2KillTracker"]
+	path = vendor/MQ2KillTracker
+	url = https://github.com/RedGuides/MQ2KillTracker.git
+	branch = master
+[submodule "vendor/MQ2KissTemplate"]
+	path = vendor/MQ2KissTemplate
+	url = https://github.com/RedGuides/MQ2KissTemplate.git
+	branch = master
+[submodule "vendor/MQ2LinkDB"]
+	path = vendor/MQ2LinkDB
+	url = https://github.com/RedGuides/MQ2LinkDB.git
+	branch = master
+[submodule "vendor/MQ2Log"]
+	path = vendor/MQ2Log
+	url = https://github.com/RedGuides/MQ2Log.git
+	branch = master
+[submodule "vendor/MQ2Medley"]
+	path = vendor/MQ2Medley
+	url = https://github.com/RedGuides/MQ2Medley.git
+	branch = master
+[submodule "vendor/MQ2Melee"]
+	path = vendor/MQ2Melee
+	url = https://github.com/RedGuides/MQ2Melee.git
+	branch = master
+[submodule "vendor/MQ2MoveUtils"]
+	path = vendor/MQ2MoveUtils
+	url = https://github.com/RedGuides/MQ2MoveUtils.git
+	branch = master
+[submodule "vendor/MQ2MyButtons"]
+	path = vendor/MQ2MyButtons
+	url = https://github.com/RedGuides/MQ2MyButtons.git
+	branch = master
+[submodule "vendor/MQ2NetBots"]
+	path = vendor/MQ2NetBots
+	url = https://github.com/RedGuides/MQ2NetBots.git
+	branch = master
+[submodule "vendor/MQ2Notepad"]
+	path = vendor/MQ2Notepad
+	url = https://github.com/RedGuides/MQ2Notepad.git
+	branch = master
+[submodule "vendor/MQ2OTD"]
+	path = vendor/MQ2OTD
+	url = https://github.com/RedGuides/MQ2OTD.git
+	branch = master
+[submodule "vendor/MQ2Paranoid"]
+	path = vendor/MQ2Paranoid
+	url = https://github.com/RedGuides/MQ2Paranoid.git
+	branch = master
+[submodule "vendor/MQ2PlatTracker"]
+	path = vendor/MQ2PlatTracker
+	url = https://github.com/RedGuides/MQ2PlatTracker.git
+	branch = master
+[submodule "vendor/MQ2PluginManager"]
+	path = vendor/MQ2PluginManager
+	url = https://github.com/RedGuides/MQ2PluginManager.git
+	branch = master
+[submodule "vendor/MQ2PortalSetter"]
+	path = vendor/MQ2PortalSetter
+	url = https://github.com/RedGuides/MQ2PortalSetter.git
+	branch = master
+[submodule "vendor/MQ2Posse"]
+	path = vendor/MQ2Posse
+	url = https://github.com/RedGuides/MQ2Posse.git
+	branch = master
+[submodule "vendor/MQ2RaidUtils"]
+	path = vendor/MQ2RaidUtils
+	url = https://github.com/RedGuides/MQ2RaidUtils.git
+	branch = master
+[submodule "vendor/MQ2Rand"]
+	path = vendor/MQ2Rand
+	url = https://github.com/RedGuides/MQ2Rand.git
+	branch = master
+[submodule "vendor/MQ2React"]
+	path = vendor/MQ2React
+	url = https://github.com/RedGuides/MQ2React.git
+	branch = master
+[submodule "vendor/MQ2RelayTells"]
+	path = vendor/MQ2RelayTells
+	url = https://github.com/RedGuides/MQ2RelayTells.git
+	branch = master
+[submodule "vendor/MQ2Relocate"]
+	path = vendor/MQ2Relocate
+	url = https://github.com/RedGuides/MQ2Relocate.git
+	branch = master
+[submodule "vendor/MQ2Rewards"]
+	path = vendor/MQ2Rewards
+	url = https://github.com/RedGuides/MQ2Rewards.git
+	branch = master
+[submodule "vendor/MQ2Rez"]
+	path = vendor/MQ2Rez
+	url = https://github.com/RedGuides/MQ2Rez.git
+	branch = master
+[submodule "vendor/MQ2Say"]
+	path = vendor/MQ2Say
+	url = https://github.com/RedGuides/MQ2Say.git
+	branch = master
+[submodule "vendor/MQ2SpawnMaster"]
+	path = vendor/MQ2SpawnMaster
+	url = https://github.com/RedGuides/MQ2SpawnMaster.git
+	branch = master
+[submodule "vendor/MQ2Spawns"]
+	path = vendor/MQ2Spawns
+	url = https://github.com/RedGuides/MQ2Spawns.git
+	branch = master
+[submodule "vendor/MQ2SpawnSort"]
+	path = vendor/MQ2SpawnSort
+	url = https://github.com/RedGuides/MQ2SpawnSort.git
+	branch = master
+[submodule "vendor/MQ2Status"]
+	path = vendor/MQ2Status
+	url = https://github.com/RedGuides/MQ2Status.git
+	branch = master
+[submodule "vendor/MQ2TributeManager"]
+	path = vendor/MQ2TributeManager
+	url = https://github.com/RedGuides/MQ2TributeManager.git
+	branch = master
+[submodule "vendor/MQ2Twist"]
+	path = vendor/MQ2Twist
+	url = https://github.com/RedGuides/MQ2Twist.git
+	branch = master
+[submodule "vendor/MQ2WorstHurt"]
+	path = vendor/MQ2WorstHurt
+	url = https://github.com/RedGuides/MQ2WorstHurt.git
+	branch = master
+[submodule "vendor/MQ2XAssist"]
+	path = vendor/MQ2XAssist
+	url = https://github.com/RedGuides/MQ2XAssist.git
+	branch = master
+[submodule "vendor/MQ2XPTracker"]
+	path = vendor/MQ2XPTracker
+	url = https://github.com/RedGuides/MQ2XPTracker.git
+	branch = master
+[submodule "vendor/MQ2AFNuke"]
+	path = vendor/MQ2AFNuke
+	url = https://github.com/RedGuides/MQ2AFNuke.git
+	branch = master
+[submodule "vendor/MQ2Heals"]
+	path = vendor/MQ2Heals
+	url = https://github.com/RedGuides/MQ2Heals.git
+	branch = master
+[submodule "vendor/MQ2ToolTip"]
+	path = vendor/MQ2ToolTip
+	url = https://github.com/RedGuides/MQ2ToolTip.git
+	branch = master
+[submodule "vendor/MQ2Vendors"]
+	path = vendor/MQ2Vendors
+	url = https://github.com/RedGuides/MQ2Vendors.git
+	branch = master
+[submodule "vendor/MQ2Tracking"]
+	path = vendor/MQ2Tracking
+	url = https://github.com/RedGuides/MQ2Tracking.git
+	branch = master
+[submodule "vendor/MQ2GMCheck"]
+	path = vendor/MQ2GMCheck
+	url = https://github.com/RedGuides/MQ2GMCheck.git
+	branch = master
+[submodule "vendor/MQ2Ice"]
+	path = vendor/MQ2Ice
+	url = https://github.com/RedGuides/MQ2Ice.git
+	branch = master
+[submodule "vendor/MQ2Targets"]
+	path = vendor/MQ2Targets
+	url = https://github.com/RedGuides/MQ2Targets.git
+	branch = master
