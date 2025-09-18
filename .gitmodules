@@ -294,3 +294,51 @@
 	path = vendor/MQ2Targets
 	url = https://github.com/RedGuides/MQ2Targets.git
 	branch = master
+[submodule "vendor/MQ2Camera"]
+	path = vendor/MQ2Camera
+	url = https://github.com/Redbot/MQ2Camera.git
+	branch = readguides
+[submodule "vendor/CWTN"]
+	path = vendor/CWTN
+	url = https://github.com/jessebevil/CWTN.git
+	branch = master
+[submodule "vendor/MQ2Dan"]
+	path = vendor/MQ2Dan
+	url = https://github.com/Redbot/MQ2Dan.git
+	branch = readguides
+[submodule "vendor/MQ2Discord"]
+	path = vendor/MQ2Discord
+	url = https://gitlab.com/Redbot/MQ2Discord.git
+	branch = readguides
+[submodule "vendor/MQ2EasyFind"]
+	path = vendor/MQ2EasyFind
+	url = https://github.com/Redbot/MQ2EasyFind.git
+	branch = readguides
+[submodule "vendor/MQ2Grind"]
+	path = vendor/MQ2Grind
+	url = https://github.com/cvanwie/MQ2Grind.git
+	branch = documentation
+[submodule "vendor/MQ2LootManager"]
+	path = vendor/MQ2LootManager
+	url = https://github.com/Redbot/MQ2LootManager.git
+	branch = readguides
+[submodule "vendor/MQ2Nav"]
+	path = vendor/MQ2Nav
+	url = https://github.com/Redbot/MQ2Nav.git
+	branch = readguides
+[submodule "vendor/MQ2SQLite"]
+	path = vendor/MQ2SQLite
+	url = https://gitlab.com/Redbot/MQ2SQLite.git
+	branch = readguides
+[submodule "vendor/MQ2TSTrophy"]
+	path = vendor/MQ2TSTrophy
+	url = https://github.com/Redbot/MQ2TSTrophy.git
+	branch = readguides
+[submodule "docs/projects/mqmountclassicmodels"]
+	path = docs/projects/mqmountclassicmodels
+	url = https://github.com/Redbot/MQMountClassicModels.git
+	branch = readguides
+[submodule "vendor/MQTextToSpeech"]
+	path = vendor/MQTextToSpeech
+	url = https://github.com/Redbot/MQTextToSpeech.git
+	branch = readguides
