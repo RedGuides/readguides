@@ -26,3 +26,37 @@
     font-weight: bold; 
     color: var(--md-code-hl-name-color);
 }  /* required variable placeholders */
+.language-eqcommand .md-code__button {
+    display: none;
+} /* Hide copy button for eqcommands */
+
+/* custom abstract admonition
+.md-typeset .admonition.abstract,
+.md-typeset details.abstract {
+  border-color: #da2401;
+}
+.md-typeset .abstract > .admonition-title,
+.md-typeset .abstract > summary {
+  background-color: rgba(189, 6, 8, 0.1);
+}
+*/
+.md-typeset .abstract > .admonition-title::before,
+.md-typeset .abstract > summary::before {
+  background-color: #da2401;
+  -webkit-mask-image: var(--md-admonition-icon--abstract);
+          mask-image: var(--md-admonition-icon--abstract);
+}
+
+/* black page header */
+body[data-md-color-scheme=slate] .md-header {
+    background-color: rgba(22, 23, 29, 0.95);
+}
+
+body[data-md-color-scheme=slate] .md-tabs {
+    background-color: rgba(22, 23, 29,0.6) !important;
+}
+
+/* Maximum space for text block */
+.md-grid {
+    max-width: 100%;
+  }

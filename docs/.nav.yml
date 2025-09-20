@@ -1,42 +1,60 @@
 nav:
   - Main Page: index.md
-
+  - EverQuest:
+    - projects/everquest/index.md
+    - projects/everquest/configuration.md
+    - projects/everquest/commands
   - MacroQuest:
+    - projects/macroquest/index.md
+    - Core Plugins: http://127.0.0.1:8000/projects/macroquest/plugins/core-plugins/
+    - Developing:
+      - Building: 
+        - Building: projects/macroquest/main/building.md
+        - Plugin Quick List: projects/macroquest/main/plugin-quick-list.md
+      - Lua: projects/macroquest/lua
+      - Macros:
+        - projects/macroquest/macros/*.md
+        - Macro Commands:
+          - /break: projects/macroquest/reference/commands/break.md
+          - /call: projects/macroquest/reference/commands/call.md
+          - /clearerrors: projects/macroquest/reference/commands/clearerrors.md
+          - /continue: projects/macroquest/reference/commands/continue.md
+          - /declare: projects/macroquest/reference/commands/declare.md
+          - /delay: projects/macroquest/reference/commands/delay.md
+          - /deletevar: projects/macroquest/reference/commands/deletevar.md
+          - /doevents: projects/macroquest/reference/commands/doevents.md
+          - /endmacro: projects/macroquest/reference/commands/endmacro.md
+          - /for: projects/macroquest/reference/commands/for.md
+          - /goto: projects/macroquest/reference/commands/goto.md
+          - /if: projects/macroquest/reference/commands/if.md
+          - /invoke: projects/macroquest/reference/commands/invoke.md
+          - /listmacros: projects/macroquest/reference/commands/listmacros.md
+          - /macro: projects/macroquest/reference/commands/macro.md
+          - /mqpause: projects/macroquest/reference/commands/mqpause.md
+          - /next: projects/macroquest/reference/commands/next.md
+          - /return: projects/macroquest/reference/commands/return.md
+          - /seterror: projects/macroquest/reference/commands/seterror.md
+          - /varcalc: projects/macroquest/reference/commands/varcalc.md
+          - /vardata: projects/macroquest/reference/commands/vardata.md
+          - /varset: projects/macroquest/reference/commands/varset.md
+          - /while: projects/macroquest/reference/commands/while.md
+        - Macro Directives: projects/macroquest/reference/macro-directives
+      - Plugins: projects/macroquest/plugins/developing
+      - projects/macroquest/main/developing/*
+      - Hacker stuff: projects/macroquest/main/hacker-stuff.md
+      - VSCode: projects/macroquest/main/other-applications/text-editors/vscode-syntax-file.md
+    - Features: projects/macroquest/main/features
     - MacroQuest Commands:
-      - Slash Commands:
-        - glob: "projects/macroquest/reference/commands/*.md"
-          ignore: README.md
-          sort:
-            by: filename
-            direction: asc
-      - Macro Commands:
-        - /break: projects/macroquest/reference/commands/break.md
-        - /deletevar: projects/macroquest/reference/commands/deletevar.md
-        - /delay: projects/macroquest/reference/commands/delay.md
-        - /declare: projects/macroquest/reference/commands/declare.md
-        - /call: projects/macroquest/reference/commands/call.md
-        - /clearerrors: projects/macroquest/reference/commands/clearerrors.md
-        - /continue: projects/macroquest/reference/commands/continue.md
-        - /doevents: projects/macroquest/reference/commands/doevents.md
-        - /endmacro: projects/macroquest/reference/commands/endmacro.md
-        - /for: projects/macroquest/reference/commands/for.md
-        - /goto: projects/macroquest/reference/commands/goto.md
-        - /if: projects/macroquest/reference/commands/if.md
-        - /invoke: projects/macroquest/reference/commands/invoke.md
-        - /listmacros: projects/macroquest/reference/commands/listmacros.md
-        - /macro: projects/macroquest/reference/commands/macro.md
-        - /mqpause: projects/macroquest/reference/commands/mqpause.md
-        - /next: projects/macroquest/reference/commands/next.md
-        - /return: projects/macroquest/reference/commands/return.md
-        - /seterror: projects/macroquest/reference/commands/seterror.md
-        - /varcalc: projects/macroquest/reference/commands/varcalc.md
-        - /vardata: projects/macroquest/reference/commands/vardata.md
-        - /varset: projects/macroquest/reference/commands/varset.md
-        - /while: projects/macroquest/reference/commands/while.md
+      - glob: "projects/macroquest/reference/commands/*.md"
+        sort:
+          by: filename
+          direction: asc
+    - MacroQuest Config: projects/macroquest/main/macroquest.ini.md
+    - MacroQuest Launcher: projects/macroquest/main/macroquest-launcher.md
     - MacroQuest TLOs: projects/macroquest/reference/top-level-objects
     - MacroQuest DataTypes: projects/macroquest/reference/data-types
-    - Core Plugins: http://127.0.0.1:8000/projects/macroquest/plugins/core-plugins/
   - Plugins:
+    - plugins/index.md
     - Core Plugins: projects/macroquest/plugins/core-plugins
     - glob: "projects/mq*"
       preserve_directory_names: true
@@ -44,7 +62,13 @@ nav:
         by: filename
         direction: asc
   - Scripts:
+    - scripts/index.md
     - projects/kissassist
     - projects/aqo/*
-  - /commands: commands/index.md
-  - TLOs: tlos/index.md
+    - projects/artisansprize
+  - Reference:
+    - All Commands: commands
+    - All TLOs: tlos
+    - All Data Types: datatypes
+    - projects/macroquest/reference/general/*.md
+    - projects/everquest/general/*.md

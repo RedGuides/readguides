@@ -1,1 +1,5 @@
-<!-- material/tags { include: [plugin, macro, lua] } -->
+---
+search:
+    exclude: true
+---
+<!-- material/tags { exclude: [command, datatype, plugin, script, tlo] } -->

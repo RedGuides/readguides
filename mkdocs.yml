@@ -1,34 +1,49 @@
-site_name: RedGuides
+site_name: Read📖Guides
 site_url: https://www.readguides.com
-repo_url: https://github.com/RedGuides/openvanilla
+repo_url: https://github.com/RedGuides/readguides
 theme:
   name: material
+  custom_dir: overrides
   features:
     - content.action.edit
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
     - search.highlight
     - search.share
     - navigation.indexes
+    - search.suggest
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
-        icon: material/brightness-auto
+        icon: material/weather-sunset-down
         name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default 
       toggle:
-        icon: material/brightness-7
+        icon: material/weather-sunny
         name: Switch to dark mode
+      primary: light blue
+      accent: red
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       toggle:
-        icon: material/brightness-4
+        icon: material/weather-night
         name: Switch to system preference
+      primary: light blue
+      accent: red
+  logo: img/logovector.svg
+  favicon: img/favicon.ico
+  icon:
+    admonition:
+      abstract: material/torch
 
 extra_css:
   - stylesheets/extra.css
-  
+
 hooks:
   - hooks/mkdocs_hooks.py
+  - hooks/optional_hooks.py
 
 plugins:
   - search
@@ -39,15 +54,16 @@ plugins:
   - meta
   - tags
 
+validation:
+  unrecognized_links: ignore
+
 markdown_extensions:
 - abbr
 - admonition
 - attr_list
 - def_list
 - footnotes
-- mdx_math
 - md_in_html
-- meta
 - toc:
     permalink: true
 - pymdownx.arithmatex:
@@ -81,14 +97,24 @@ markdown_extensions:
 - pymdownx.tilde
 
 extra_javascript:
-  - js/random-image.js
+    - js/random-image.js
 
 exclude_docs: |
+  /projects/macroquest/README.md
   /projects/macroquest/plugins/community-plugins/
   /projects/macroquest/plugins/discontinued/
-  /projects/macroquest/main/
-  /projects/macroquest/reference/commands/README.md
+  /projects/macroquest/macros/gallery/
   /projects/macroquest/reference/commands/eq/
+  /projects/macroquest/main/**
+  !/projects/macroquest/main/macroquest.ini.md
+  !/projects/macroquest/main/macroquest-launcher.md
+  !/projects/macroquest/main/hacker-stuff.md
+  !/projects/macroquest/main/history-of-macroquest.md
+  !/projects/macroquest/main/other-applications/text-editors/vscode-syntax-file.md
+  !/projects/macroquest/main/building.md
+  !/projects/macroquest/main/plugin-quick-list.md
+  !/projects/macroquest/main/features/**
+  !/projects/macroquest/main/developing/**
   /projects/aqo/README.md
   /projects/aqo/main/
   /projects/aqo/misc/
@@ -100,5 +126,3 @@ exclude_docs: |
   /projects/aqo/taskwindow/
   /projects/aqo/arkanoid/
   /projects/aqo/wordquest/
-  **/*.deepseek
-  **/*.openai

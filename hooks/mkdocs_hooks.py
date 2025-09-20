@@ -1,6 +1,6 @@
 import re
 import mkdocs.plugins
-import pathlib  # Import the pathlib module
+import pathlib
 
 # for macroquest docs to link correctly
 PREFIX = "projects/macroquest/"
@@ -15,7 +15,7 @@ def on_page_markdown(markdown: str, page, config, files):
     if not src_path.startswith(PREFIX):
         return markdown
 
-    # Treat some paths as "rooted" (don’t prefix)
+    # Treat some paths as "rooted" (don't prefix)
     def _is_rooted(p: str) -> bool:
         return (
             p.startswith(PREFIX)               # already macroquest-rooted
@@ -54,42 +54,27 @@ def on_page_markdown(markdown: str, page, config, files):
 
     return markdown
 
-# Hook to override edit URL using page-specific repo_url and path adjustment
 @mkdocs.plugins.event_priority(0) #default priority
 def on_page_context(context, page, config, nav):
     """
-    Constructs edit URLs using page-specific repo_url and path adjustments
-    without affecting the header repository link.
+    Constructs edit URLs using page-specific repo_url and path adjustments.
     
     Metadata fields:
     - docs_repository: Documentation repo (where edit button should go)
     - docs_edit_uri: Edit URI for docs repo (defaults to config.edit_uri)
     - docs_file_path: Complete override of file path for edit URL
     - docs_path_transform: Dict with 'from' and 'to' keys for path transformation
-    - edit_uri_strip_dirs: Number of directory levels to strip from file path (legacy)
-    - repository: Backwards compatibility fallback
-    - edit_uri: Backwards compatibility fallback
     
     Example docs_path_transform:
     docs_path_transform:
       from: "docs/projects/aqo/"
       to: "docs/"
     """
-    # Determine the documentation repository for edit URLs
-    # Priority: docs_repository > repository (backwards compat) > global config
-    docs_repo_url = (
-        page.meta.get("docs_repository") or 
-        page.meta.get("repository") or 
-        config.repo_url
-    )
+    # Use the documentation repository for edit URLs
+    docs_repo_url = page.meta.get("docs_repository") or config.repo_url
     
-    # Determine the edit URI
-    # Priority: docs_edit_uri > edit_uri (backwards compat) > global config
-    edit_uri = (
-        page.meta.get("docs_edit_uri") or 
-        page.meta.get("edit_uri") or 
-        config.edit_uri
-    )
+    # Use the documentation edit URI
+    edit_uri = page.meta.get("docs_edit_uri") or config.edit_uri
     
     # Determine the file path for the edit URL
     if "docs_file_path" in page.meta:
@@ -107,10 +92,6 @@ def on_page_context(context, page, config, nav):
                 to_path = transform["to"]
                 if file_src_uri.startswith(from_path):
                     file_src_uri = to_path + file_src_uri[len(from_path):]
-        
-        # Legacy directory stripping (applied after path transformation)
-        if "edit_uri_strip_dirs" in page.meta:
-            file_src_uri = "/".join(file_src_uri.split("/")[page.meta["edit_uri_strip_dirs"]:])
 
     # Only build edit_url if we have the required components
     if docs_repo_url and edit_uri:

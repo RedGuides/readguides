@@ -1,0 +1,8 @@
+mkdocs-material
+mkdocs-awesome-nav
+mkdocs-glightbox
+mkdocs-include-markdown-plugin
+mkdocs-macros-plugin
+mkdocs-redirects
+mkdocs-gen-files
+eq_lexers

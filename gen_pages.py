@@ -153,7 +153,7 @@ def find_tagged_files(tag_name: str, docs_dir_path: Path) -> List[Dict]:
             }
             entries.append(entry)
     
-    return sorted(entries, key=lambda x: x['title'])
+    return sorted(entries, key=lambda x: section_sort_key(x['title']).lower())
 
 
 # =============================================================================
@@ -253,7 +253,7 @@ def generate_tlo_datatypes_index(entries: List[Dict], item_type: str, output_fil
     
     # Sort sections alphabetically (ignoring MQ/MQ2 prefixes) and entries within each section
     for section_entries in sections.values():
-        section_entries.sort(key=lambda x: x['title'])
+        section_entries.sort(key=lambda x: section_sort_key(x['title']).lower())
     
     # Sort sections alphabetically, ignoring MQ/MQ2 prefixes
     sorted_sections = sorted(sections.items(), key=lambda x: section_sort_key(x[0]).lower())

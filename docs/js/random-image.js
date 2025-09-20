@@ -7,10 +7,6 @@ const imagesWithCaptions = [
     caption: 'Quinn Lincoln, <em>"RedGuides Logo"</em>, 2012.',
   },
   {
-    src: 'img/Eqboxart.jpeg',
-    caption: 'Keith Richardson, <em>"EverQuest Box Art"</em>, 1998.',
-  },
-  {
     src: 'img/Creature-from-the-black-lagoon.jpeg',
     caption: 'Maskoi, <em>"KissAssist 10 Creature from the Black Lagoon Edition"</em>, 2017.',
   },

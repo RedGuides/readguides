@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {{ super() }}
+  {% if page.meta.docs_site %}
+    {% set original_url = page.meta.original_docs_url or page.meta.docs_site %}
+    <div class="admonition info">
+      <p class="admonition-title">Republished and possibly modified from <a href="{{ original_url }}" target="_blank" rel="noopener">{{ original_url }}</a></p>
+    </div>
+  {% endif %}
+{% endblock %}
