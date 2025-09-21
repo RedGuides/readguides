@@ -19,11 +19,28 @@ jobs:
       TARGET_DIR:   ${{ secrets.TARGET_DIR }}
       TARGET_OWNER: ${{ secrets.TARGET_OWNER }}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
 
     steps:
-      # Checkout source
+      # Configure .netrc for GitHub and GitLab
+      - name: Configure .netrc for hosts
+        run: |
+          cat <<EOF > ~/.netrc
+          machine github.com
+            login x-access-token
+            password ${{ secrets.GH_TOKEN }}
+          machine gitlab.com
+            login oauth2
+            password ${{ secrets.GITLAB_TOKEN }}
+          EOF
+          chmod 600 ~/.netrc
+
+      # Checkout source WITH submodules
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
 
       # Prepare Python
       - name: Set up Python
