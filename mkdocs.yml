@@ -32,7 +32,7 @@ theme:
         name: Switch to system preference
       primary: light blue
       accent: red
-  logo: img/logovector.svg
+  logo: img/logomaterial.svg
   favicon: img/favicon.ico
   icon:
     admonition:

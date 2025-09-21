@@ -1,4 +1,4 @@
-mkdocs-material
+mkdocs-material @ git+ssh://git@github.com/squidfunk/mkdocs-material-insiders.git
 mkdocs-awesome-nav
 mkdocs-glightbox
 mkdocs-include-markdown-plugin

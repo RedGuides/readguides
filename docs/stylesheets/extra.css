@@ -42,7 +42,7 @@
 */
 .md-typeset .abstract > .admonition-title::before,
 .md-typeset .abstract > summary::before {
-  background-color: #da2401;
+  background-color: #FF1744;
   -webkit-mask-image: var(--md-admonition-icon--abstract);
           mask-image: var(--md-admonition-icon--abstract);
 }

@@ -1,0 +1,126 @@
+name: Build ReadGuides Documentation & Deploy via SSH
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      # Environment variables for deployment
+      TARGET_HOST:  ${{ secrets.TARGET_HOST }}
+      TARGET_USER:  ${{ secrets.TARGET_USER }}
+      TARGET_DIR:   ${{ secrets.TARGET_DIR }}
+      TARGET_OWNER: ${{ secrets.TARGET_OWNER }}
+
+    steps:
+      # Checkout source
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Prepare Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      # (optional) Cache pip packages to speed-up subsequent runs
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # Install MkDocs & plugins
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Start ssh-agent
+      - name: Start ssh-agent
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.READGUIDES_SSH_KEY }}
+
+      # Generate documentation pages
+      - name: Generate documentation pages
+        run: python gen_pages.py
+
+      # Build the static site
+      - name: Build readguides documentation
+        run: mkdocs build --clean
+
+      # Create a tar.gz archive of the build
+      - name: Compress artefact
+        run: |
+          tar -czf readguides_docs.tar.gz -C site .
+
+      ####################################################################
+      #  SSH section – copy archive & unpack remotely
+      ####################################################################
+
+      # (optional) Pre-accept host key to avoid the prompt
+      - name: Add host to known_hosts
+        run: |
+          ssh-keyscan -H ${{ env.TARGET_HOST }} >> ~/.ssh/known_hosts
+
+      # Copy the archive over
+      - name: Copy archive via scp
+        run: |
+          scp -o StrictHostKeyChecking=no readguides_docs.tar.gz \
+              ${{ env.TARGET_USER }}@${{ env.TARGET_HOST }}:/tmp/
+
+      # Run remote commands: unpack, chown, atomic swap
+      - name: Extract and swap on server
+        run: |
+          # Run the commands via SSH
+          ssh ${{ env.TARGET_USER }}@${{ env.TARGET_HOST }} << 'EOF'
+            set -e
+            # Use the variables defined in the workflow
+            TARGET_DIR="${{ env.TARGET_DIR }}"
+            TARGET_OWNER="${{ env.TARGET_OWNER }}"
+            
+            # Check if variables are empty
+            if [ -z "$TARGET_DIR" ] || [ -z "$TARGET_OWNER" ]; then
+              echo "Error: TARGET_DIR or TARGET_OWNER is empty." >&2
+              exit 1
+            fi
+            
+            echo "Deploying readguides documentation to $TARGET_DIR"
+            
+            # Deployment commands
+            sudo rm -rf "${TARGET_DIR}.new"
+            sudo mkdir -p "${TARGET_DIR}.new"
+            sudo tar -xzf /tmp/readguides_docs.tar.gz -C "${TARGET_DIR}.new"
+            sudo chown -R "${TARGET_OWNER}" "${TARGET_DIR}.new"
+            
+            if [ -d "${TARGET_DIR}" ]; then
+              sudo mv "${TARGET_DIR}" "${TARGET_DIR}.old"
+            fi
+            sudo mv "${TARGET_DIR}.new" "${TARGET_DIR}"
+            
+            sudo rm -rf "${TARGET_DIR}.old"
+            sudo rm -f  /tmp/readguides_docs.tar.gz
+            
+            echo "✅  ReadGuides documentation deploy complete"
+          EOF
+
+      # Purge Cloudflare cache
+      - name: Purge Cloudflare cache
+        # Only run if the previous steps were successful
+        if: success()
+        uses: NathanVaughn/actions-cloudflare-purge@master
+        with:
+          # Map existing secrets to the expected input names for this action
+          cf_zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          cf_auth: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # By default, without files/tags/hosts/prefixes, it purges everything
