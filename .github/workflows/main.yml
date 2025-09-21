@@ -18,6 +18,7 @@ jobs:
       TARGET_USER:  ${{ secrets.TARGET_USER }}
       TARGET_DIR:   ${{ secrets.TARGET_DIR }}
       TARGET_OWNER: ${{ secrets.TARGET_OWNER }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
     steps:
       # Checkout source
