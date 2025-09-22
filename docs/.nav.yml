@@ -6,7 +6,7 @@ nav:
     - projects/everquest/commands
   - MacroQuest:
     - projects/macroquest/index.md
-    - Core Plugins: http://127.0.0.1:8000/projects/macroquest/plugins/core-plugins/
+    - Core Plugins: https://www.redguides.com/docs/projects/macroquest/plugins/core-plugins/
     - Developing:
       - Building: 
         - Building: projects/macroquest/main/building.md
