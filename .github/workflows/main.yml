@@ -8,39 +8,50 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: readguides-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     env:
-      # Environment variables for deployment
+      # Environment variables for deployment and auth
       TARGET_HOST:  ${{ secrets.TARGET_HOST }}
       TARGET_USER:  ${{ secrets.TARGET_USER }}
       TARGET_DIR:   ${{ secrets.TARGET_DIR }}
       TARGET_OWNER: ${{ secrets.TARGET_OWNER }}
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
 
     steps:
-      # Configure .netrc for GitHub and GitLab
-      - name: Configure .netrc for hosts
-        run: |
-          cat <<EOF > ~/.netrc
-          machine github.com
-            login x-access-token
-            password ${{ secrets.GH_TOKEN }}
-          machine gitlab.com
-            login oauth2
-            password ${{ secrets.GITLAB_TOKEN }}
-          EOF
-          chmod 600 ~/.netrc
-
-      # Checkout source WITH submodules
+      # Checkout source WITHOUT submodules first
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
           persist-credentials: false
+
+      # Setup SSH agent with keys for submodules and private dependencies
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: |
+            ${{ secrets.SUBMODULES_SSH_KEY }}
+            ${{ secrets.READGUIDES_SSH_KEY }}
+
+      # Configure Git to use SSH for GitHub and GitLab submodules
+      - name: Configure Git for SSH submodules
+        run: |
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+          git config --global url."git@gitlab.com:".insteadOf "https://gitlab.com/"
+          # Add known hosts
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+
+      # Initialize submodules using SSH
+      - name: Initialize submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive --depth=1
 
       # Prepare Python
       - name: Set up Python
@@ -62,12 +73,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      # Start ssh-agent
-      - name: Start ssh-agent
-        uses: webfactory/ssh-agent@v0.9.1
-        with:
-          ssh-private-key: ${{ secrets.READGUIDES_SSH_KEY }}
 
       # Generate documentation pages
       - name: Generate documentation pages
