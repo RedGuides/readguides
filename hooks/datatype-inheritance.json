@@ -1,0 +1,130 @@
+{
+  "datatypes": {
+    "character": {
+      "path": "projects/macroquest/reference/data-types/datatype-character.md",
+      "inherits_from": [
+        {
+          "type": "spawn",
+          "path": "projects/macroquest/reference/data-types/datatype-spawn.md"
+        }
+      ]
+    },
+    "target": {
+      "path": "projects/macroquest/reference/data-types/datatype-target.md",
+      "inherits_from": [
+        {
+          "type": "spawn",
+          "path": "projects/macroquest/reference/data-types/datatype-spawn.md"
+        }
+      ]
+    },
+    "buff": {
+      "path": "projects/macroquest/reference/data-types/datatype-buff.md",
+      "inherits_from": [
+        {
+          "type": "spell",
+          "path": "projects/macroquest/reference/data-types/datatype-spell.md"
+        }
+      ]
+    },
+    "cachedbuff": {
+      "path": "projects/macroquest/reference/data-types/datatype-cachedbuff.md",
+      "inherits_from": [
+        {
+          "type": "spell",
+          "path": "projects/macroquest/reference/data-types/datatype-spell.md"
+        }
+      ]
+    },
+    "corpse": {
+      "path": "projects/macroquest/reference/data-types/datatype-corpse.md",
+      "inherits_from": [
+        {
+          "type": "spawn",
+          "path": "projects/macroquest/reference/data-types/datatype-spawn.md"
+        }
+      ]
+    },
+    "currentzone": {
+      "path": "projects/macroquest/reference/data-types/datatype-currentzone.md",
+      "inherits_from": [
+        {
+          "type": "zone",
+          "path": "projects/macroquest/reference/data-types/datatype-zone.md"
+        }
+      ]
+    },
+    "groupmember": {
+      "path": "projects/macroquest/reference/data-types/datatype-groupmember.md",
+      "inherits_from": [
+        {
+          "type": "spawn",
+          "path": "projects/macroquest/reference/data-types/datatype-spawn.md"
+        }
+      ]
+    },
+    "mercenary": {
+      "path": "projects/macroquest/reference/data-types/datatype-mercenary.md",
+      "inherits_from": [
+        {
+          "type": "spawn",
+          "path": "projects/macroquest/reference/data-types/datatype-spawn.md"
+        }
+      ]
+    },
+    "merchant": {
+      "path": "projects/macroquest/reference/data-types/datatype-merchant.md",
+      "inherits_from": [
+        {
+          "type": "spawn",
+          "path": "projects/macroquest/reference/data-types/datatype-spawn.md"
+        }
+      ]
+    },
+    "pet": {
+      "path": "projects/macroquest/reference/data-types/datatype-pet.md",
+      "inherits_from": [
+        {
+          "type": "spawn",
+          "path": "projects/macroquest/reference/data-types/datatype-spawn.md"
+        }
+      ]
+    },
+    "pointmerchant": {
+      "path": "projects/macroquest/reference/data-types/datatype-pointmerchant.md",
+      "inherits_from": [
+        {
+          "type": "spawn",
+          "path": "projects/macroquest/reference/data-types/datatype-spawn.md"
+        }
+      ]
+    },
+    "displayitem": {
+      "path": "projects/macroquest/plugins/core-plugins/itemdisplay/datatype-displayitem.md",
+      "inherits_from": [
+        {
+          "type": "item",
+          "path": "projects/macroquest/reference/data-types/datatype-item.md"
+        }
+      ]
+    },
+    "macroquest": {
+      "path": "projects/macroquest/reference/data-types/datatype-macroquest.md",
+      "inherits_from": [
+        {
+          "type": "everquest",
+          "path": "projects/macroquest/reference/data-types/datatype-everquest.md"
+        }
+      ]
+    },
+    "menu": {
+      "path": "projects/macroquest/reference/data-types/datatype-menu.md",
+      "inherits_from": [
+        {
+          "type": "window",
+          "path": "projects/macroquest/reference/data-types/datatype-window.md"
+        }
+      ]
+    }
+  }
+}

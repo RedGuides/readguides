@@ -1,0 +1,42 @@
+{
+  "projects": {
+    "EverQuest": {
+      "path_template": "projects/everquest/commands/cmd-{command}.md"
+    },
+    "MacroQuest": {
+      "path_template": "projects/macroquest/reference/commands/{command}.md"
+    },
+    "MQ2TributeManager": {
+      "path_template": "projects/mq2tributemanager/cmd-{command}.md"
+    },
+    "MQ2XAssist": {
+      "path_template": "projects/mq2xassist/cmd-{command}.md"
+    },
+    "MQ2AutoForage": {
+      "path_template": "projects/mq2autoforage/cmd-{command}.md"
+    },
+    "MQ2Rand": {
+      "path_template": "projects/mq2rand/cmd-{command}.md"
+    }
+  },
+  "/advloot": ["EverQuest", "MacroQuest"],
+  "/cast": ["EverQuest", "MacroQuest"],
+  "/destroyitem": ["EverQuest", "MQ2AutoForage"],
+  "/doability": ["EverQuest", "MacroQuest"],
+  "/filter": ["EverQuest", "MacroQuest"],
+  "/help": ["EverQuest", "MacroQuest"],
+  "/hotbutton": ["EverQuest", "MacroQuest"],
+  "/location": ["EverQuest", "MacroQuest"],
+  "/mercswitch": ["EverQuest", "MacroQuest"],
+  "/pet": ["EverQuest", "MacroQuest"],
+  "/pickzone": ["EverQuest", "MacroQuest"],
+  "/quit": ["EverQuest", "MacroQuest"],
+  "/random": ["EverQuest", "MQ2Rand"],
+  "/target": ["EverQuest", "MacroQuest"],
+  "/taskquit": ["EverQuest", "MacroQuest"],
+  "/tribute": ["EverQuest", "MQ2TributeManager"],
+  "/useitem": ["EverQuest", "MacroQuest"],
+  "/who": ["EverQuest", "MacroQuest"],
+  "/whotarget": ["EverQuest", "MacroQuest"],
+  "/xtarget": ["EverQuest", "MQ2XAssist"]
+}
