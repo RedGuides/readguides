@@ -186,7 +186,7 @@ def generate_command_index(entries: List[Dict], docs_dir_path: Path) -> str:
         
         for entry in section_entries:
             macro_path = entry['path']
-            href_link = entry['link'].lstrip('/')
+            href_link = f"../{entry['link'].lstrip('/') }"
             
             command_block = f"""
 <a href="{href_link}">
