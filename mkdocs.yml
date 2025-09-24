@@ -12,6 +12,8 @@ theme:
     - search.highlight
     - search.share
     - navigation.indexes
+    - navigation.path
+    - navigation.top
     - search.suggest
   palette:
     - media: "(prefers-color-scheme)"
