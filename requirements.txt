@@ -1,3 +1,4 @@
+# MKDocs
 mkdocs-material @ git+ssh://git@github.com/squidfunk/mkdocs-material-insiders.git
 mkdocs-awesome-nav
 mkdocs-glightbox
@@ -6,3 +7,8 @@ mkdocs-macros-plugin
 mkdocs-redirects
 mkdocs-gen-files
 eq_lexers
+# update_submodules.py
+GitPython
+PyGithub
+python-gitlab
+requests

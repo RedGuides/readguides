@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # Used for GitHub API calls to discover fork parents/default branches
-      GH_TOKEN: ${{ github.token }}
-      # Optional: GitLab personal access token for private projects or higher rate limits
-      GL_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+      # Tokens used by update_submodules.py
+      GH_API_TOKEN: ${{ secrets.GH_API_TOKEN }}
+      GITLAB_API_TOKEN: ${{ secrets.GITLAB_API_TOKEN }}
+      XF_DONOTREPLY_KEY: ${{ secrets.XF_DONOTREPLY_KEY }}
 
     steps:
       - name: Checkout repository (no submodules)
