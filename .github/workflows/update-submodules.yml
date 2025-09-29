@@ -1,0 +1,64 @@
+name: Update Submodules from Upstream
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: readguides-update-submodules-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update-submodules:
+    runs-on: ubuntu-latest
+
+    env:
+      # Tokens used by update_submodules.py
+      GH_API_TOKEN: ${{ secrets.GH_API_TOKEN }}
+      GITLAB_API_TOKEN: ${{ secrets.GITLAB_API_TOKEN }}
+      XF_DONOTREPLY_KEY: ${{ secrets.XF_DONOTREPLY_KEY }}
+
+    steps:
+      - name: Checkout repository (no submodules)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          submodules: false
+
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: |
+            ${{ secrets.SUBMODULES_SSH_KEY }}
+            ${{ secrets.READGUIDES_SSH_KEY }}
+
+      - name: Configure Git and known_hosts
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+          git config --global url."git@gitlab.com:".insteadOf "https://gitlab.com/"
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Initialize submodules (full history)
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive
+
+      - name: Update all submodules from upstream and push
+        env:
+          GH_API: https://api.github.com
+          GL_API: https://gitlab.com/api/v4
+        run: python update_submodules.py
+
+
