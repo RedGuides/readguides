@@ -1,6 +1,8 @@
 name: Build ReadGuides Documentation & Deploy via SSH
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
@@ -20,6 +22,12 @@ jobs:
       TARGET_USER:  ${{ secrets.TARGET_USER }}
       TARGET_DIR:   ${{ secrets.TARGET_DIR }}
       TARGET_OWNER: ${{ secrets.TARGET_OWNER }}
+      # Environment variables for discussion mapper
+      REDGUIDES_HOST:    ${{ secrets.REDGUIDES_HOST }}
+      REDGUIDES_USER:    ${{ secrets.REDGUIDES_USER }}
+      REDGUIDES_DB_USER: ${{ secrets.REDGUIDES_DB_USER }}
+      REDGUIDES_DB_PASS: ${{ secrets.REDGUIDES_DB_PASS }}
+      REDGUIDES_DB_NAME: ${{ secrets.REDGUIDES_DB_NAME }}
 
     steps:
       # Checkout source WITHOUT submodules first
@@ -75,6 +83,18 @@ jobs:
       # Generate documentation pages
       - name: Generate documentation pages
         run: python gen_pages.py
+
+      # Add database host to known_hosts for discussion mapper
+      - name: Add database host to known_hosts
+        run: |
+          ssh-keyscan -H ${{ env.REDGUIDES_HOST }} >> ~/.ssh/known_hosts
+
+      # Generate discussion map (requires SSH access to database)
+      - name: Generate discussion map
+        run: |
+          cd discussion_mapper
+          python generate_discussion_map.py
+          cd ..
 
       # Build the static site
       - name: Build readguides documentation

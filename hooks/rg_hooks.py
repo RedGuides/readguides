@@ -9,13 +9,15 @@ import mkdocs.plugins
 # Global configurations for both features:
 # - overlap: commands that exist across multiple projects (from overlap-commands.json)
 # - inheritance: datatype inheritance display (from datatype-inheritance.json)
+# - discussion_links: forum discussions that link to documentation pages (from discussion_mapper/data/thread_links.json)
 _DUPE_CONFIG = {}
 _INHERITANCE_CONFIG = {}
+_THREAD_LINKS = {}
 
 @mkdocs.plugins.event_priority(0) #default priority
 def on_config(config):
-    """Load configs for overlap (overlap-commands.json) and datatype inheritance (datatype-inheritance.json)."""
-    global _DUPE_CONFIG, _INHERITANCE_CONFIG
+    """Load configs for overlap (overlap-commands.json), datatype inheritance (datatype-inheritance.json), and discussion links."""
+    global _DUPE_CONFIG, _INHERITANCE_CONFIG, _THREAD_LINKS
     
     config_dir = Path(config["config_file_path"]).parent.resolve()
     hooks_dir = config_dir / "hooks"
@@ -29,6 +31,19 @@ def on_config(config):
     inheritance_path = hooks_dir / "datatype-inheritance.json"
     if inheritance_path.exists():
         _INHERITANCE_CONFIG = json.loads(inheritance_path.read_text())
+    
+    # Load discussion links (forum threads that link to documentation pages)
+    thread_links_path = config_dir / "discussion_mapper" / "data" / "thread_links.json"
+    if thread_links_path.exists():
+        try:
+            _THREAD_LINKS = json.loads(thread_links_path.read_text(encoding='utf-8'))
+            print(f"✅ Loaded {len(_THREAD_LINKS)} discussion link mappings")
+        except Exception as e:
+            print(f"⚠️  Warning: Could not load discussion links: {e}")
+            _THREAD_LINKS = {}
+    else:
+        print(f"ℹ️  No discussion links file found at {thread_links_path}")
+        _THREAD_LINKS = {}
         
     return config
 
@@ -362,11 +377,30 @@ def on_page_markdown(markdown, page, config, files):
                     insert_pos = members_end_match.end()
                     markdown = markdown[:insert_pos] + "\n\n" + inheritance_admonition + "\n" + markdown[insert_pos:]
     
-    # Process project attribution (lowest priority - runs last)
+    # Inject discussion links and project attribution into page metadata (for template access)
+    _inject_discussion_links(page)
+    
+    # Process project attribution - store in page.meta for template rendering
     if _should_show_project_attribution(page):
         attribution_admonition = _build_project_attribution_admonition(page, config)
         if attribution_admonition:
-            # Append at the end of the document
-            markdown = markdown + "\n\n" + attribution_admonition + "\n"
+            page.meta['project_attribution'] = attribution_admonition
     
     return markdown
+
+# === DISCUSSION LINKS FUNCTIONALITY ===
+
+def _inject_discussion_links(page):
+    """Inject forum discussion links into page metadata for template access."""
+    if not _THREAD_LINKS:
+        return
+    
+    # Normalize the page URL (remove trailing slash, convert to lowercase)
+    lookup_key = page.url.strip('/').lower()
+    
+    # Find matching discussion links
+    found_links = _THREAD_LINKS.get(lookup_key, [])
+    
+    # Inject into page metadata for template access
+    if found_links:
+        page.meta['discussion_links'] = found_links

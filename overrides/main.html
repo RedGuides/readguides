@@ -2,10 +2,31 @@
 
 {% block content %}
   {{ super() }}
+  {# Discussion links section #}
+  {% if page.meta.discussion_links %}
+    <h2 data-search-exclude>Discussions that link here</h2>
+    <ul>
+    {% for link in page.meta.discussion_links %}
+      <li>
+        <a href="{{ link.thread_url }}" target="_blank" rel="noopener">
+          {{ link.thread_title }}
+        </a>
+      </li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+
+  {# Project attribution section - appears after discussions #}
+  {% if page.meta.project_attribution %}
+    {{ page.meta.project_attribution }}
+  {% endif %}
+  
+  {# Original docs site attribution #}
   {% if page.meta.docs_site %}
     {% set original_url = page.meta.original_docs_url or page.meta.docs_site %}
     <div class="admonition info">
       <p class="admonition-title">Republished and possibly modified from <a href="{{ original_url }}" target="_blank" rel="noopener">{{ original_url }}</a></p>
     </div>
   {% endif %}
+
 {% endblock %}

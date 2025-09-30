@@ -4,6 +4,9 @@ garbage/
 # MkDocs build files (if generated)
 site/
 
+# Discussion mapper generated data
+discussion_mapper/data/thread_links.json
+
 # Python
 __pycache__/
 *.py[cod]
