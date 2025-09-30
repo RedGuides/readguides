@@ -284,8 +284,20 @@ def _build_project_attribution_data(page, config):
         return None
         
     # Calculate relative path from current page to project
-    current_dir = posixpath.dirname(page.file.src_uri)
-    relative_path = posixpath.relpath(project_link, current_dir or ".")
+    # Must account for MkDocs output directory structure:
+    # - index.md/README.md outputs to same directory
+    # - regular files output to subdirectory (foo.md -> foo/)
+    src_uri_parts = posixpath.splitext(page.file.src_uri)
+    src_basename = posixpath.basename(src_uri_parts[0])
+    
+    if src_basename.lower() in ("readme", "index"):
+        # index.md or README.md -> output directory is parent
+        output_dir = posixpath.dirname(page.file.src_uri)
+    else:
+        # regular file -> output directory is parent/stem/
+        output_dir = src_uri_parts[0]  # includes parent and stem without extension
+    
+    relative_path = posixpath.relpath(project_link, output_dir or ".")
     
     # Convert .md path to proper MkDocs URL (strip .md, handle index/readme)
     # e.g., "../../index.md" -> "../../", "../../foo.md" -> "../../foo/"
