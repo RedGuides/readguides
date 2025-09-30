@@ -15,3 +15,4 @@ requests
 # discussion_mapper
 pymysql
 sshtunnel
+paramiko<3.4.0  # sshtunnel not compatible with paramiko 3.4.0+ (DSSKey removed)
