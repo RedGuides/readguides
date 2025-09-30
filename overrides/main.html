@@ -18,7 +18,10 @@
 
   {# Project attribution section - appears after discussions #}
   {% if page.meta.project_attribution %}
-    {{ page.meta.project_attribution }}
+    {% set attr = page.meta.project_attribution %}
+    <div class="admonition info">
+      <p class="admonition-title">This {{ attr.item_type }} is added by <a href="{{ attr.project_url }}">{{ attr.project_name }}</a>.</p>
+    </div>
   {% endif %}
   
   {# Original docs site attribution #}

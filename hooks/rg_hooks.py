@@ -270,8 +270,8 @@ def _should_show_project_attribution(page):
     
     return bool(relevant_tags & page_tags)
 
-def _build_project_attribution_admonition(page, config):
-    """Build project attribution admonition."""
+def _build_project_attribution_data(page, config):
+    """Build project attribution data for template rendering."""
     project_name, project_link = _detect_project_name_from_path(page.file.src_path)
     
     if not project_name or not project_link:
@@ -298,12 +298,12 @@ def _build_project_attribution_admonition(page, config):
     else:
         item_type = "item"  # fallback
         
-    # Build the admonition
-    admonition = (
-        f'!!! info "This {item_type} is added by [{project_name}]({relative_path})."'
-    )
-    
-    return admonition
+    # Return data dict for template
+    return {
+        "project_name": project_name,
+        "project_url": relative_path,
+        "item_type": item_type
+    }
 
 # === FRONTMATTER INFOBOX FUNCTIONALITY ===
 
@@ -382,9 +382,9 @@ def on_page_markdown(markdown, page, config, files):
     
     # Process project attribution - store in page.meta for template rendering
     if _should_show_project_attribution(page):
-        attribution_admonition = _build_project_attribution_admonition(page, config)
-        if attribution_admonition:
-            page.meta['project_attribution'] = attribution_admonition
+        attribution_data = _build_project_attribution_data(page, config)
+        if attribution_data:
+            page.meta['project_attribution'] = attribution_data
     
     return markdown
 
