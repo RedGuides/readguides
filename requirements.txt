@@ -12,3 +12,6 @@ GitPython
 PyGithub
 python-gitlab
 requests
+# discussion_mapper
+pymysql
+sshtunnel
