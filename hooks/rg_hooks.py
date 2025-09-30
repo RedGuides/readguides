@@ -287,6 +287,19 @@ def _build_project_attribution_data(page, config):
     current_dir = posixpath.dirname(page.file.src_uri)
     relative_path = posixpath.relpath(project_link, current_dir or ".")
     
+    # Convert .md path to proper MkDocs URL (strip .md, handle index/readme)
+    # e.g., "../../index.md" -> "../../", "../../foo.md" -> "../../foo/"
+    path_parts = posixpath.splitext(relative_path)
+    if path_parts[0].endswith(('/index', '/README', '\\index', '\\README')) or \
+       posixpath.basename(path_parts[0]).lower() in ('index', 'readme'):
+        # index.md or README.md -> use directory path
+        project_url = posixpath.dirname(relative_path) + '/'
+        if project_url == '/':
+            project_url = './'
+    else:
+        # regular file -> strip .md and add trailing slash
+        project_url = path_parts[0] + '/'
+    
     # Determine the type from tags
     page_tags = page.meta.get("tags", [])
     if "command" in page_tags:
@@ -301,7 +314,7 @@ def _build_project_attribution_data(page, config):
     # Return data dict for template
     return {
         "project_name": project_name,
-        "project_url": relative_path,
+        "project_url": project_url,
         "item_type": item_type
     }
 
