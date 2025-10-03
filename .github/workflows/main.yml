@@ -155,7 +155,7 @@ jobs:
             echo "✅  ReadGuides documentation deploy complete"
           EOF
 
-      # Purge Cloudflare cache
+      # Purge Cloudflare cache for /docs only
       - name: Purge Cloudflare cache
         # Only run if the previous steps were successful
         if: success()
@@ -164,4 +164,5 @@ jobs:
           # Map existing secrets to the expected input names for this action
           cf_zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           cf_auth: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          # By default, without files/tags/hosts/prefixes, it purges everything
+          # Purge only the /docs directory
+          prefixes: "redguides.com/docs/"
