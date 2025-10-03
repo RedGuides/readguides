@@ -165,4 +165,4 @@ jobs:
           cf_zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           cf_auth: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           # Purge only the /docs directory
-          prefixes: "redguides.com/docs/"
+          prefixes: "www.redguides.com/docs/"
