@@ -1,5 +1,5 @@
 site_name: Read📖Guides
-site_url: https://www.readguides.com
+site_url: https://www.redguides.com/docs
 repo_url: https://github.com/RedGuides/readguides
 theme:
   name: material
@@ -14,6 +14,9 @@ theme:
     - navigation.indexes
     - navigation.path
     - navigation.top
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
     - search.suggest
   palette:
     - media: "(prefers-color-scheme)"
@@ -54,6 +57,7 @@ plugins:
   - include-markdown
   - macros
   - meta
+  - privacy
   - tags
 
 validation:
@@ -104,6 +108,7 @@ extra_javascript:
 exclude_docs: |
   /projects/macroquest/README.md
   /projects/macroquest/plugins/community-plugins/
+  /projects/macroquest/vendor/
   /projects/macroquest/plugins/discontinued/
   /projects/macroquest/macros/gallery/
   /projects/macroquest/reference/commands/eq/
