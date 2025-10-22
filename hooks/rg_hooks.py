@@ -9,7 +9,7 @@ import mkdocs.plugins
 # Global configurations for both features:
 # - overlap: commands that exist across multiple projects (from overlap-commands.json)
 # - inheritance: datatype inheritance display (from datatype-inheritance.json)
-# - discussion_links: forum discussions that link to documentation pages (from discussion_mapper/data/thread_links.json)
+# - discussion_links: forum discussions that link to documentation pages (from data/thread_links.json)
 _DUPE_CONFIG = {}
 _INHERITANCE_CONFIG = {}
 _THREAD_LINKS = {}
@@ -33,7 +33,7 @@ def on_config(config):
         _INHERITANCE_CONFIG = json.loads(inheritance_path.read_text())
     
     # Load discussion links (forum threads that link to documentation pages)
-    thread_links_path = config_dir / "discussion_mapper" / "data" / "thread_links.json"
+    thread_links_path = config_dir / "data" / "thread_links.json"
     if thread_links_path.exists():
         try:
             _THREAD_LINKS = json.loads(thread_links_path.read_text(encoding='utf-8'))
