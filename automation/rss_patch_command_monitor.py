@@ -7,6 +7,7 @@ import argparse
 import requests
 import feedparser
 from pathlib import Path
+from difflib import SequenceMatcher
 from bs4 import BeautifulSoup
 from openai import OpenAI
 
@@ -55,7 +56,7 @@ Brief description.
 2.  **DON'T REMOVE EXISTING EXAMPLES**: Also, don't invent new examples unless one is explicitly provided in the patch notes.
 3.  **INFER FOR NEW COMMANDS**: For a **NEW** command only, if the patch notes describe it as being "similar" to an existing command, you should infer its syntax and options from the existing command's documentation.
 4.  **TIMELESS DOC**: Do not add "NEW" or "Updated" or "Now" or "added" or "changed" to the doc. This should be timeless.
-5. ** NO EMPTY SECTIONS **: If a section is empty, don't include it.
+5.  **NO EMPTY SECTIONS**: If a section is empty, don't include it.
 """
 
 # --- Core Functions ---
@@ -133,6 +134,59 @@ def generate_doc(cmd, text, existing_doc, related_docs=None):
     
     return re.sub(r'(^```(?:markdown|md)?\s*\n?|\n?```\s*$)', '', resp.strip())
 
+def find_similar_commands(cmd_name, cmd_map, max_results=5):
+    """Find existing commands that are similar to cmd_name.
+    
+    Prioritizes prefix matches (e.g., /autog -> /autogroup) over general similarity,
+    since EQ commands work like shell completion.
+    """
+    similarities = []
+    for existing_cmd in cmd_map.keys():
+        # Check if one is a prefix of the other (EQ command completion style)
+        is_prefix = cmd_name.startswith(existing_cmd) or existing_cmd.startswith(cmd_name)
+        
+        # Calculate similarity ratio
+        ratio = SequenceMatcher(None, cmd_name, existing_cmd).ratio()
+        
+        # Prefix matches are always candidates, others need high similarity
+        if is_prefix or ratio > 0.85:
+            similarities.append((existing_cmd, ratio))
+    
+    # Sort by similarity (highest first) and return top results
+    similarities.sort(key=lambda x: x[1], reverse=True)
+    return [cmd for cmd, _ in similarities[:max_results]]
+
+def verify_command_match(extracted_cmd, similar_cmd, patch_text, existing_doc=None):
+    """Ask LLM if extracted command refers to the existing similar command."""
+    print(f"    -> Asking LLM: Is `/{extracted_cmd}` the same as `/{similar_cmd}`?")
+    
+    user_prompt = f"""Patch notes mention: /{extracted_cmd}
+Existing command in docs: /{similar_cmd}
+
+Full patch notes:
+{patch_text}
+"""
+    
+    if existing_doc:
+        user_prompt += f"""
+Existing documentation for /{similar_cmd}:
+{existing_doc}
+"""
+    
+    user_prompt += """
+Question: Is the patch note referring to the existing command (e.g., using casual/shortened name, singular/plural variation)?
+
+Answer with ONLY 'yes' or 'no'."""
+    
+    resp = deepseek_chat([
+        {"role": "system", "content": "You are an EverQuest command expert. Determine if commands are the same."},
+        {"role": "user", "content": user_prompt}
+    ], temperature=0.0, max_tokens=10)
+    
+    answer = resp.lower().strip()
+    print(f"    -> LLM says: {answer}")
+    return answer == "yes"
+
 def find_related_docs_for_new_command(cmd_name, patch_text, cmd_map):
     """For new commands, find mentioned existing commands to use as reference."""
     mentioned = {c.lstrip('/').lower() for c in re.findall(r"`(/[\w]+)`", patch_text)}
@@ -154,6 +208,24 @@ def process_text_for_commands(text, cmd_map):
     for cmd in commands:
         cmd_name = cmd.lstrip("/").lower()
         existing_path = cmd_map.get(cmd_name)
+        
+        # If no exact match, try fuzzy matching
+        if not existing_path:
+            print(f"  {cmd}: No exact match found")
+            similar = find_similar_commands(cmd_name, cmd_map)
+            
+            if similar:
+                print(f"    -> Found {len(similar)} similar command(s): {[f'/{c}' for c in similar]}")
+                # Check the most similar command
+                for similar_cmd in similar:
+                    # Load existing doc for context
+                    similar_doc = cmd_map[similar_cmd].read_text(encoding="utf-8")
+                    if verify_command_match(cmd_name, similar_cmd, text, similar_doc):
+                        print(f"    -> Matched to existing `/{similar_cmd}`")
+                        existing_path = cmd_map[similar_cmd]
+                        cmd_name = similar_cmd  # Use the correct command name
+                        cmd = f"/{similar_cmd}"  # Update cmd to use correct name
+                        break
         
         if existing_path:
             print(f"  {cmd}: EXISTING doc at {existing_path}")
