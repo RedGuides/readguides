@@ -9,6 +9,12 @@ on:
     - cron: '0 8 * * *'
   # Manual trigger for testing
   workflow_dispatch:
+    inputs:
+      clear_cache:
+        description: 'Clear RSS feed state cache before running'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -68,12 +74,19 @@ jobs:
 
       # Restore state cache - keyed by current date to ensure daily access
       - name: Restore RSS feed state cache
+        if: ${{ !inputs.clear_cache }}
         uses: actions/cache/restore@v4
         with:
           path: .cache
           key: rss-feed-state-${{ github.run_id }}
           restore-keys: |
             rss-feed-state-
+
+      - name: Clear cache (if requested)
+        if: ${{ inputs.clear_cache }}
+        run: |
+          rm -rf .cache
+          echo "Cache cleared!"
 
       - name: Run RSS monitor script
         id: rss_monitor
@@ -105,7 +118,7 @@ jobs:
         if: steps.check_changes.outputs.has_changes == 'true'
         working-directory: docs/projects/everquest
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_API_TOKEN }}
         run: |
           # Create branch with timestamp
           BRANCH_NAME="rss-update-$(date +%Y%m%d-%H%M%S)"
