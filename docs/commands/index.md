@@ -1469,6 +1469,21 @@ search:
      %} {{ readMore('projects/everquest/commands/cmd-aggrometer.md') }}
 
 
+<a href="../projects/everquest/commands/cmd-airlute/">
+{%
+  include-markdown "projects/everquest/commands/cmd-airlute.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-airlute.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-airlute.md') }}
+
+
 <a href="../projects/everquest/commands/cmd-alarm/">
 {%
   include-markdown "projects/everquest/commands/cmd-alarm.md"
@@ -1497,6 +1512,21 @@ search:
         end="<!--cmd-desc-end-->"
         trailing-newlines=false
      %} {{ readMore('projects/everquest/commands/cmd-alternateadv.md') }}
+
+
+<a href="../projects/everquest/commands/cmd-announce/">
+{%
+  include-markdown "projects/everquest/commands/cmd-announce.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-announce.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-announce.md') }}
 
 
 <a href="../projects/everquest/commands/cmd-anonymous/">
@@ -1784,6 +1814,21 @@ search:
      %} {{ readMore('projects/everquest/commands/cmd-book.md') }}
 
 
+<a href="../projects/everquest/commands/cmd-bug/">
+{%
+  include-markdown "projects/everquest/commands/cmd-bug.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-bug.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-bug.md') }}
+
+
 <a href="../projects/everquest/commands/cmd-bugreport/">
 {%
   include-markdown "projects/everquest/commands/cmd-bugreport.md"
@@ -1857,6 +1902,21 @@ search:
         end="<!--cmd-desc-end-->"
         trailing-newlines=false
      %} {{ readMore('projects/everquest/commands/cmd-cast.md') }}
+
+
+<a href="../projects/everquest/commands/cmd-changefamiliar/">
+{%
+  include-markdown "projects/everquest/commands/cmd-changefamiliar.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-changefamiliar.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-changefamiliar.md') }}
 
 
 <a href="../projects/everquest/commands/cmd-changefamiliarname/">
@@ -2579,6 +2639,21 @@ search:
      %} {{ readMore('projects/everquest/commands/cmd-extralife.md') }}
 
 
+<a href="../projects/everquest/commands/cmd-facepalm/">
+{%
+  include-markdown "projects/everquest/commands/cmd-facepalm.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-facepalm.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-facepalm.md') }}
+
+
 <a href="../projects/everquest/commands/cmd-faction/">
 {%
   include-markdown "projects/everquest/commands/cmd-faction.md"
@@ -2592,6 +2667,21 @@ search:
         end="<!--cmd-desc-end-->"
         trailing-newlines=false
      %} {{ readMore('projects/everquest/commands/cmd-faction.md') }}
+
+
+<a href="../projects/everquest/commands/cmd-faint/">
+{%
+  include-markdown "projects/everquest/commands/cmd-faint.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-faint.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-faint.md') }}
 
 
 <a href="../projects/everquest/commands/cmd-familiar/">
@@ -2639,6 +2729,21 @@ search:
      %} {{ readMore('projects/everquest/commands/cmd-feedback.md') }}
 
 
+<a href="../projects/everquest/commands/cmd-fight/">
+{%
+  include-markdown "projects/everquest/commands/cmd-fight.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-fight.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-fight.md') }}
+
+
 <a href="../projects/everquest/commands/cmd-filter/">
 {%
   include-markdown "projects/everquest/commands/cmd-filter.md"
@@ -2684,6 +2789,21 @@ search:
      %} {{ readMore('projects/everquest/commands/cmd-findpc.md') }}
 
 
+<a href="../projects/everquest/commands/cmd-fistbump/">
+{%
+  include-markdown "projects/everquest/commands/cmd-fistbump.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-fistbump.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-fistbump.md') }}
+
+
 <a href="../projects/everquest/commands/cmd-follow/">
 {%
   include-markdown "projects/everquest/commands/cmd-follow.md"
@@ -2712,6 +2832,21 @@ search:
         end="<!--cmd-desc-end-->"
         trailing-newlines=false
      %} {{ readMore('projects/everquest/commands/cmd-fontface.md') }}
+
+
+<a href="../projects/everquest/commands/cmd-freakout/">
+{%
+  include-markdown "projects/everquest/commands/cmd-freakout.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-freakout.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-freakout.md') }}
 
 
 <a href="../projects/everquest/commands/cmd-friends/">
@@ -2832,6 +2967,21 @@ search:
         end="<!--cmd-desc-end-->"
         trailing-newlines=false
      %} {{ readMore('projects/everquest/commands/cmd-grouproles.md') }}
+
+
+<a href="../projects/everquest/commands/cmd-growl/">
+{%
+  include-markdown "projects/everquest/commands/cmd-growl.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-growl.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-growl.md') }}
 
 
 <a href="../projects/everquest/commands/cmd-gsay/">
@@ -3042,6 +3192,21 @@ search:
         end="<!--cmd-desc-end-->"
         trailing-newlines=false
      %} {{ readMore('projects/everquest/commands/cmd-help.md') }}
+
+
+<a href="../projects/everquest/commands/cmd-hidecorpse/">
+{%
+  include-markdown "projects/everquest/commands/cmd-hidecorpse.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-hidecorpse.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-hidecorpse.md') }}
 
 
 <a href="../projects/everquest/commands/cmd-hidecorpses/">
@@ -3434,6 +3599,21 @@ search:
      %} {{ readMore('projects/everquest/commands/cmd-marketplace.md') }}
 
 
+<a href="../projects/everquest/commands/cmd-maybe/">
+{%
+  include-markdown "projects/everquest/commands/cmd-maybe.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-maybe.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-maybe.md') }}
+
+
 <a href="../projects/everquest/commands/cmd-mcicontrol/">
 {%
   include-markdown "projects/everquest/commands/cmd-mcicontrol.md"
@@ -3629,6 +3809,36 @@ search:
      %} {{ readMore('projects/everquest/commands/cmd-netstats.md') }}
 
 
+<a href="../projects/everquest/commands/cmd-no/">
+{%
+  include-markdown "projects/everquest/commands/cmd-no.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-no.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-no.md') }}
+
+
+<a href="../projects/everquest/commands/cmd-nod/">
+{%
+  include-markdown "projects/everquest/commands/cmd-nod.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-nod.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-nod.md') }}
+
+
 <a href="../projects/everquest/commands/cmd-note/">
 {%
   include-markdown "projects/everquest/commands/cmd-note.md"
@@ -3717,6 +3927,21 @@ search:
         end="<!--cmd-desc-end-->"
         trailing-newlines=false
      %} {{ readMore('projects/everquest/commands/cmd-overseer.md') }}
+
+
+<a href="../projects/everquest/commands/cmd-overseermassconvert/">
+{%
+  include-markdown "projects/everquest/commands/cmd-overseermassconvert.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-overseermassconvert.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-overseermassconvert.md') }}
 
 
 <a href="../projects/everquest/commands/cmd-particledensity/">
@@ -3809,6 +4034,36 @@ search:
      %} {{ readMore('projects/everquest/commands/cmd-pickzonefewestplayers.md') }}
 
 
+<a href="../projects/everquest/commands/cmd-pie/">
+{%
+  include-markdown "projects/everquest/commands/cmd-pie.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-pie.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-pie.md') }}
+
+
+<a href="../projects/everquest/commands/cmd-pizza/">
+{%
+  include-markdown "projects/everquest/commands/cmd-pizza.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-pizza.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-pizza.md') }}
+
+
 <a href="../projects/everquest/commands/cmd-played/">
 {%
   include-markdown "projects/everquest/commands/cmd-played.md"
@@ -3822,6 +4077,21 @@ search:
         end="<!--cmd-desc-end-->"
         trailing-newlines=false
      %} {{ readMore('projects/everquest/commands/cmd-played.md') }}
+
+
+<a href="../projects/everquest/commands/cmd-queuemelody/">
+{%
+  include-markdown "projects/everquest/commands/cmd-queuemelody.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-queuemelody.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-queuemelody.md') }}
 
 
 <a href="../projects/everquest/commands/cmd-quit/">
@@ -4077,6 +4347,21 @@ search:
         end="<!--cmd-desc-end-->"
         trailing-newlines=false
      %} {{ readMore('projects/everquest/commands/cmd-roleplay.md') }}
+
+
+<a href="../projects/everquest/commands/cmd-rps/">
+{%
+  include-markdown "projects/everquest/commands/cmd-rps.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-rps.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-rps.md') }}
 
 
 <a href="../projects/everquest/commands/cmd-rsay/">
@@ -4514,6 +4799,21 @@ search:
      %} {{ readMore('projects/everquest/commands/cmd-target.md') }}
 
 
+<a href="../projects/everquest/commands/cmd-targetgroupbuff/">
+{%
+  include-markdown "projects/everquest/commands/cmd-targetgroupbuff.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-targetgroupbuff.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-targetgroupbuff.md') }}
+
+
 <a href="../projects/everquest/commands/cmd-targetoftarget/">
 {%
   include-markdown "projects/everquest/commands/cmd-targetoftarget.md"
@@ -4694,6 +4994,21 @@ search:
      %} {{ readMore('projects/everquest/commands/cmd-testcopy.md') }}
 
 
+<a href="../projects/everquest/commands/cmd-tgb/">
+{%
+  include-markdown "projects/everquest/commands/cmd-tgb.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-tgb.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-tgb.md') }}
+
+
 <a href="../projects/everquest/commands/cmd-time/">
 {%
   include-markdown "projects/everquest/commands/cmd-time.md"
@@ -4857,6 +5172,21 @@ search:
         end="<!--cmd-desc-end-->"
         trailing-newlines=false
      %} {{ readMore('projects/everquest/commands/cmd-ttell.md') }}
+
+
+<a href="../projects/everquest/commands/cmd-ttth/">
+{%
+  include-markdown "projects/everquest/commands/cmd-ttth.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-ttth.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-ttth.md') }}
 
 
 <a href="../projects/everquest/commands/cmd-ui/">
@@ -5127,6 +5457,21 @@ search:
         end="<!--cmd-desc-end-->"
         trailing-newlines=false
      %} {{ readMore('projects/everquest/commands/cmd-yell.md') }}
+
+
+<a href="../projects/everquest/commands/cmd-yes/">
+{%
+  include-markdown "projects/everquest/commands/cmd-yes.md"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}
+</a>
+:    {% 
+        include-markdown "projects/everquest/commands/cmd-yes.md"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %} {{ readMore('projects/everquest/commands/cmd-yes.md') }}
 
 
 ## MQ2Exchange
