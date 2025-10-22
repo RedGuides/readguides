@@ -72,21 +72,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Restore persistent state cache
-      # Uses a single static key that's updated on every run
-      # Daily cron keeps cache alive indefinitely (7-day expiration resets on access)
-      - name: Restore RSS feed state cache
-        if: ${{ !inputs.clear_cache }}
-        uses: actions/cache/restore@v4
-        with:
-          path: .cache
-          key: rss-feed-state
-
       - name: Clear cache (if requested)
         if: ${{ inputs.clear_cache }}
         run: |
           rm -rf .cache
           echo "Cache cleared! Next run will start fresh."
+
+      - name: Restore RSS feed state cache
+        if: ${{ !inputs.clear_cache }}
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: rss-feed-state-${{ github.run_id }}
+          restore-keys: |
+            rss-feed-state-
 
       - name: Run RSS monitor script
         id: rss_monitor
@@ -94,15 +93,6 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
           python automation/rss_patch_command_monitor.py
-
-      # Save updated state back to same cache key
-      # This updates the existing cache and resets its expiration timer
-      - name: Save RSS feed state cache
-        uses: actions/cache/save@v4
-        if: always()
-        with:
-          path: .cache
-          key: rss-feed-state
 
       - name: Check for changes in submodule
         id: check_changes
@@ -121,27 +111,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_API_TOKEN }}
         run: |
-          # Create branch with timestamp
           BRANCH_NAME="rss-update-$(date +%Y%m%d-%H%M%S)"
           git checkout -b "$BRANCH_NAME"
-          
-          # Stage changes
           git add commands/
           
-          # Get list of changed files for PR body
           NEW_FILES=$(git diff --cached --name-status | grep "^A" | sed 's/^A\s*//' | sed 's/.*cmd-/\//' | sed 's/.md$//' | tr '\n' ' ')
           UPDATED_FILES=$(git diff --cached --name-status | grep "^M" | sed 's/^M\s*//' | sed 's/.*cmd-/\//' | sed 's/.md$//' | tr '\n' ' ')
-          
-          # Count changes
           NUM_CHANGES=$(git diff --cached --name-only | wc -l)
           
-          # Commit changes
           git commit -m "Update EQ command documentation from RSS feed"
-          
-          # Push branch to everquest-docs repo
           git push origin "$BRANCH_NAME"
           
-          # Build PR body
           PR_BODY="Automated command documentation updates from EQ patch notes.
           
           **Changed:** $NUM_CHANGES command(s)"
@@ -156,9 +136,8 @@ jobs:
           **Updated:**${UPDATED_FILES}"
           fi
           
-          # Add patch notes links if available
           PATCH_NOTES='${{ steps.rss_monitor.outputs.patch_notes }}'
-          if [ -n "$PATCH_NOTES" ] && [ "$PATCH_NOTES" != "null" ]; then
+          if [ -n "$PATCH_NOTES" ]; then
             PR_BODY="${PR_BODY}
           
           **Source:**
@@ -174,15 +153,11 @@ jobs:
             --head "$BRANCH_NAME" \
             --draft)
           
-          # Output PR details for subsequent steps
           echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
           echo "num_changes=$NUM_CHANGES" >> $GITHUB_OUTPUT
           echo "new_files=$NEW_FILES" >> $GITHUB_OUTPUT
           echo "updated_files=$UPDATED_FILES" >> $GITHUB_OUTPUT
-          
-          # Extract first patch note link for forum post
-          FIRST_PATCH_NOTE=$(echo "$PATCH_NOTES" | jq -r '.[0].link // empty')
-          echo "first_patch_note=$FIRST_PATCH_NOTE" >> $GITHUB_OUTPUT
+          echo "first_patch_note=$(echo "$PATCH_NOTES" | jq -r '.[0].link // empty')" >> $GITHUB_OUTPUT
 
       - name: Post to RedGuides forum
         if: steps.create_pr.outputs.pr_url != ''
