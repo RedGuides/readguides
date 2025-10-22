@@ -291,8 +291,8 @@ def update_single_submodule(cfg: dict, name: str, path: str, desired_branch: str
                 subrepo.git.merge('--no-edit', '--ff-only', f"origin/{local_branch}")
                 print(f"Fast-forwarded to origin/{local_branch}")
             except GitCommandError as e:
-                print(f"::warning::Could not fast-forward from origin/{local_branch}: {e}")
-                # This is not necessarily an error - might just be up to date
+                print(f"::error::Merge error from origin/{local_branch} in '{path}': {e}")
+                return _empty_result(False)
 
         # Detect changes by comparing to initial commit (passed from caller)
         commit_after = subrepo.head.commit.hexsha
