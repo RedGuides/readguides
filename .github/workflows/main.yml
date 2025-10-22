@@ -91,10 +91,7 @@ jobs:
 
       # Generate discussion map (requires SSH access to database)
       - name: Generate discussion map
-        run: |
-          cd discussion_mapper
-          python generate_discussion_map.py
-          cd ..
+        run: python automation/generate_discussion_map.py
 
       # Build the static site
       - name: Build readguides documentation

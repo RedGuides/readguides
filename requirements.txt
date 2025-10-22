@@ -7,12 +7,17 @@ mkdocs-macros-plugin
 mkdocs-redirects
 mkdocs-gen-files
 eq_lexers
-# update_submodules.py
+# automation/update_submodules.py
 GitPython
 PyGithub
 python-gitlab
-requests
-# discussion_mapper
+# automation/generate_discussion_map.py
 pymysql
 sshtunnel
 paramiko<3.4.0  # sshtunnel not compatible with paramiko 3.4.0+ (DSSKey removed)
+# automation/rss_patch_command_monitor.py
+feedparser
+python-dotenv
+beautifulsoup4
+openai
+requests

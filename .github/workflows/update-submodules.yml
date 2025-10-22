@@ -20,7 +20,6 @@ jobs:
       # Tokens used by update_submodules.py
       GH_API_TOKEN: ${{ secrets.GH_API_TOKEN }}
       GITLAB_API_TOKEN: ${{ secrets.GITLAB_API_TOKEN }}
-      XF_DONOTREPLY_KEY: ${{ secrets.XF_DONOTREPLY_KEY }}
 
     steps:
       - name: Checkout repository (no submodules)
@@ -59,9 +58,20 @@ jobs:
           git submodule update --init --recursive
 
       - name: Update all submodules from upstream and push
+        id: update
         env:
           GH_API: https://api.github.com
           GL_API: https://gitlab.com/api/v4
-        run: python update_submodules.py
+        run: python automation/update_submodules.py
+
+      - name: Post to RedGuides forum
+        if: steps.update.outputs.new_pr_created == 'true'
+        uses: RedGuides/redguides-reply@v1
+        env:
+          REDGUIDES_API_KEY: ${{ secrets.XF_DONOTREPLY_KEY }}
+        with:
+          thread-id: '95078'
+          message: |
+            Hi I'm from [URL=${{ steps.update.outputs.script_url }}]update_submodules.py[/URL], [URL=${{ steps.update.outputs.repo_url }}]Read📖Guides[/URL], and I check for updated documentation. Please check my PR: ${{ steps.update.outputs.pr_url }}
 
 
