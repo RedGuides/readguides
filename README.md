@@ -6,7 +6,7 @@ A long link to these docs: [www.redguides.com/docs](https://www.redguides.com/do
 
 ## Editing
 
-The "edit" button on any page of the site will ideally take you to the maintainer's repository, even if our version differs a bit. (As of this commit for MQ and a few others it will take you to a fork.)
+The "edit" button on any page of the site will ideally take you to the maintainer's repository, even if our version differs a bit. (As of this commit for a few plugins it will take you to a fork.)
 
 ## Adding your project's docs
 
