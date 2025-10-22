@@ -37,7 +37,7 @@ def get_github_client(cfg: dict) -> Optional[Github]:
 
 
 # ========================
-# GitHub, GitLab, RedGuides helpers
+# GitHub/GitLab API helpers
 # ========================
 
 def parse_github_owner_repo(url: str) -> Optional[Tuple[str, str]]:
@@ -51,27 +51,18 @@ def get_github_repo_info(cfg: dict, url: str) -> Optional[dict]:
         return None
     
     owner, repo = parsed
+    
+    # Try with token first, fallback to unauthenticated
     gh = get_github_client(cfg)
+    if not gh:
+        gh = Github(base_url=cfg['gh_api'])
     
-    # Try with token first
-    if gh:
-        with suppress(Exception):
-            repo_obj = gh.get_repo(f"{owner}/{repo}")
-            return {
-                'default_branch': repo_obj.default_branch,
-                'parent': {'full_name': repo_obj.parent.full_name} if repo_obj.parent else None
-            }
-    
-    # Fallback to unauthenticated
     with suppress(Exception):
-        gh_unauth = Github(base_url=cfg['gh_api'])
-        repo_obj = gh_unauth.get_repo(f"{owner}/{repo}")
+        repo_obj = gh.get_repo(f"{owner}/{repo}")
         return {
             'default_branch': repo_obj.default_branch,
             'parent': {'full_name': repo_obj.parent.full_name} if repo_obj.parent else None
         }
-    
-    return None
 
 
 def get_remote_default_branch(repo: Repo, remote_name: str = 'origin') -> str:
@@ -104,8 +95,6 @@ def find_existing_github_pr(cfg: dict, owner: str, repo_name: str, head_branch: 
         repo = gh.get_repo(f"{owner}/{repo_name}")
         return next((pr.html_url for pr in repo.get_pulls(state='open', base=base_branch) 
                     if pr.head.ref == head_branch), None)
-    return None
-
 
 
 def discover_github_upstream(cfg: dict, origin_url: str) -> Optional[str]:
@@ -113,7 +102,8 @@ def discover_github_upstream(cfg: dict, origin_url: str) -> Optional[str]:
     if not info:
         return None
     
-    parent_full_name = info.get('parent', {}).get('full_name') if info.get('parent') else None
+    parent = info.get('parent')
+    parent_full_name = parent.get('full_name') if parent else None
     if parent_full_name:
         upstream_url = f"git@github.com:{parent_full_name}.git"
         print(f"Found GitHub upstream: {upstream_url}")
@@ -164,7 +154,7 @@ def discover_upstream_url(cfg: dict, origin_url: str) -> Optional[str]:
 
 
 # ========================
-# Submodule utilities
+# Submodule operations
 # ========================
 
 def get_submodules(repo: Repo) -> dict:
@@ -176,10 +166,9 @@ def determine_working_branch(subrepo: Repo, desired_branch: str) -> str:
     if desired_branch:
         return desired_branch
     # Try origin's default
-    with suppress(GitCommandError):
-        for ln in subrepo.git.remote('show', 'origin').splitlines():
-            if 'HEAD branch:' in ln:
-                return ln.split(':', 1)[1].strip()
+    origin_default = get_remote_default_branch(subrepo, 'origin')
+    if origin_default != 'main':  # get_remote_default_branch returns 'main' as fallback
+        return origin_default
     # Fall back to current branch or 'main'
     with suppress(Exception):
         return subrepo.active_branch.name  # type: ignore
@@ -194,26 +183,8 @@ def ensure_checked_out_branch(subrepo: Repo, branch: str):
             subrepo.git.checkout('-B', branch, origin_ref)
         else:
             subrepo.git.checkout('-B', branch)
-        return
     with suppress(GitCommandError):
         subrepo.git.checkout(branch)
-
-
-def compute_ahead_and_changed_files(subrepo: Repo, branch: str) -> Tuple[int, List[str]]:
-    try:
-        subrepo.git.show_ref('--verify', f"refs/remotes/origin/{branch}")
-    except GitCommandError:
-        return 0, []
-    
-    ahead = 0
-    with suppress(GitCommandError):
-        ahead = int(subrepo.git.rev_list('--count', f"origin/{branch}..HEAD") or 0)
-    
-    files = []
-    with suppress(GitCommandError):
-        files = subrepo.git.diff('--name-only', f"origin/{branch}..HEAD").splitlines()
-    
-    return ahead, [f.strip() for f in files if f.strip()]
 
 
 def push_submodule(subrepo: Repo, branch: str) -> bool:
@@ -226,17 +197,21 @@ def push_submodule(subrepo: Repo, branch: str) -> bool:
         return False
 
 
-# ========================
-# Core operations
-# ========================
+def get_submodule_initial_commit(path: str) -> Optional[str]:
+    """Get the current commit of a submodule, or None if not initialized."""
+    if not os.path.exists(os.path.join(path, '.git')):
+        return None
+    with suppress(Exception):
+        return Repo(path).head.commit.hexsha
 
-def update_single_submodule(cfg: dict, name: str, path: str, desired_branch: str) -> Tuple[bool, dict]:
+
+def update_single_submodule(cfg: dict, name: str, path: str, desired_branch: str, commit_before: Optional[str]) -> Tuple[bool, dict]:
     print(f"::group::Processing submodule '{name}' at '{path}'")
     
     def _empty_result(success=True):
         return success, {
             'name': name, 'path': path, 'branch': desired_branch or '',
-            'upstream_url': '', 'has_commits_to_push': False,
+            'upstream_url': '', 'has_new_commits': False,
             'ahead_count': 0, 'changed_files': []
         }
     
@@ -270,17 +245,16 @@ def update_single_submodule(cfg: dict, name: str, path: str, desired_branch: str
         with suppress(Exception):
             upstream_url = subrepo.remotes.upstream.url  # type: ignore
         
-        if not upstream_url:
+        if upstream_url:
+            print(f"Using upstream: {upstream_url}")
+        else:
             upstream_url = discover_upstream_url(cfg, origin_url) or ''
-            
             if upstream_url:
                 with suppress(GitCommandError):
                     subrepo.create_remote('upstream', upstream_url)
                     print(f"Added upstream: {upstream_url}")
-        else:
-            print(f"Using upstream: {upstream_url}")
 
-        # Fetch and merge upstream if available
+        # Merge from upstream (if fork) or origin (if canonical)
         if upstream_url:
             upstream_branch = get_upstream_default_branch(subrepo)
             print(f"Fetching upstream, branch '{upstream_branch}'")
@@ -311,21 +285,43 @@ def update_single_submodule(cfg: dict, name: str, path: str, desired_branch: str
                 print(f"::error::Merge conflict in '{path}': {e}")
                 return _empty_result(False)
         else:
-            print("No upstream; skipping merge")
+            # No upstream means this is the canonical repo - merge from origin instead
+            print("No upstream detected; treating as canonical repo")
+            try:
+                subrepo.git.merge('--no-edit', '--ff-only', f"origin/{local_branch}")
+                print(f"Fast-forwarded to origin/{local_branch}")
+            except GitCommandError as e:
+                print(f"::warning::Could not fast-forward from origin/{local_branch}: {e}")
+                # This is not necessarily an error - might just be up to date
 
-        # Compute ahead count and changed files
-        ahead_count, changed_files = compute_ahead_and_changed_files(subrepo, local_branch)
+        # Detect changes by comparing to initial commit (passed from caller)
+        commit_after = subrepo.head.commit.hexsha
+        ahead_count = 0
+        changed_files = []
+        
+        if commit_before is not None and commit_before != commit_after:
+            # We pulled in new commits - get the diff
+            with suppress(GitCommandError):
+                changed_files = subrepo.git.diff('--name-only', f"{commit_before}..{commit_after}").splitlines()
+                changed_files = [f.strip() for f in changed_files if f.strip()]
+                result = subrepo.git.rev_list('--count', f"{commit_before}..{commit_after}")
+                ahead_count = int(result) if result else 0
+                print(f"Pulled {ahead_count} new commit(s)")
 
         return True, {
             'name': name, 'path': path, 'branch': local_branch,
             'upstream_url': upstream_url,
-            'has_commits_to_push': ahead_count > 0,
+            'has_new_commits': ahead_count > 0,
             'ahead_count': ahead_count,
             'changed_files': changed_files,
         }
     finally:
         print("::endgroup::")
 
+
+# ========================
+# Superproject operations
+# ========================
 
 def commit_superproject_changes_and_open_pr(cfg: dict, super_repo: Repo, updated_modules: List[dict]) -> bool:
     try:
@@ -349,7 +345,7 @@ def commit_superproject_changes_and_open_pr(cfg: dict, super_repo: Repo, updated
             return False
 
         # Stage changed submodule paths
-        changed_paths = sorted({r.get('path') for r in updated_modules if r.get('path')})
+        changed_paths = sorted({r['path'] for r in updated_modules})
         if not changed_paths:
             print('No submodule paths to stage.')
             return True
@@ -418,7 +414,7 @@ def commit_superproject_changes_and_open_pr(cfg: dict, super_repo: Repo, updated
 
 
 # ========================
-# Orchestration
+# Update workflow
 # ========================
 
 def update_all_submodules(cfg: dict) -> bool:
@@ -428,19 +424,24 @@ def update_all_submodules(cfg: dict) -> bool:
         print('No submodules found.')
         return True
 
+    # Cache initial commits for all submodules
+    print(f"Caching initial commits for {len(submods)} submodule(s)...")
+    initial_commits = {name: get_submodule_initial_commit(info['path']) 
+                      for name, info in submods.items()}
+
     # Update each submodule
     results = []
     for name, info in submods.items():
-        ok, meta = update_single_submodule(cfg, name, info['path'], info['branch'])
+        ok, meta = update_single_submodule(cfg, name, info['path'], info['branch'], initial_commits[name])
         if not ok:
             return False
         results.append(meta)
 
     # Check for updates and markdown changes
-    updated_modules = [r for r in results if r.get('has_commits_to_push')]
+    updated_modules = [r for r in results if r.get('has_new_commits')]
     any_md_changed = any(
         any(f.endswith('.md') for f in r.get('changed_files', []))
-        for r in results
+        for r in updated_modules
     )
 
     # Report updated modules
