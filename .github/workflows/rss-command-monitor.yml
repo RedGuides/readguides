@@ -72,21 +72,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Restore state cache - keyed by current date to ensure daily access
+      # Restore persistent state cache
+      # Uses a single static key that's updated on every run
+      # Daily cron keeps cache alive indefinitely (7-day expiration resets on access)
       - name: Restore RSS feed state cache
         if: ${{ !inputs.clear_cache }}
         uses: actions/cache/restore@v4
         with:
           path: .cache
-          key: rss-feed-state-${{ github.run_id }}
-          restore-keys: |
-            rss-feed-state-
+          key: rss-feed-state
 
       - name: Clear cache (if requested)
         if: ${{ inputs.clear_cache }}
         run: |
           rm -rf .cache
-          echo "Cache cleared!"
+          echo "Cache cleared! Next run will start fresh."
 
       - name: Run RSS monitor script
         id: rss_monitor
@@ -95,13 +95,14 @@ jobs:
         run: |
           python automation/rss_patch_command_monitor.py
 
-      # Save state cache for next run
+      # Save updated state back to same cache key
+      # This updates the existing cache and resets its expiration timer
       - name: Save RSS feed state cache
         uses: actions/cache/save@v4
         if: always()
         with:
           path: .cache
-          key: rss-feed-state-${{ github.run_id }}
+          key: rss-feed-state
 
       - name: Check for changes in submodule
         id: check_changes
