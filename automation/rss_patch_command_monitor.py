@@ -16,7 +16,7 @@ COMMANDS_DIR = Path("docs/projects/everquest/commands")
 STATE_FILE = Path(".cache/eq_feed_state.json")
 INITIAL_MAX_ID = 305891  # Don't process entries older than this on first run
 
-TEMPLATE_GUIDE = f"""EverQuest command docs follow this template:
+TEMPLATE_GUIDE = """EverQuest command docs follow this template:
 ```markdown
 ---
 tags:
@@ -60,9 +60,19 @@ Brief description.
 
 # --- Core Functions ---
 
+# Initialize OpenAI client once at module level
+_deepseek_client = None
+
+def get_deepseek_client():
+    """Get or create DeepSeek API client."""
+    global _deepseek_client
+    if _deepseek_client is None:
+        _deepseek_client = OpenAI(api_key=os.environ["DEEPSEEK_API_KEY"], base_url="https://api.deepseek.com")
+    return _deepseek_client
+
 def deepseek_chat(messages, temperature=1.0, max_tokens=8192, use_reasoner=False):
     """Call DeepSeek API using OpenAI SDK."""
-    client = OpenAI(api_key=os.environ["DEEPSEEK_API_KEY"], base_url="https://api.deepseek.com")
+    client = get_deepseek_client()
     model = "deepseek-reasoner" if use_reasoner else "deepseek-chat"
     resp = client.chat.completions.create(model=model, messages=messages, 
                                           temperature=temperature, max_tokens=max_tokens)
@@ -102,8 +112,10 @@ def extract_commands_from_text(text):
     print(f"[OK] Extracted {len(commands)} commands: {commands}")
     return commands
 
-def generate_doc(cmd, text, existing_doc, related_docs={}):
+def generate_doc(cmd, text, existing_doc, related_docs=None):
     """Generates the markdown for a single command using the LLM."""
+    if related_docs is None:
+        related_docs = {}
     prompt = TEMPLATE_GUIDE + "\n\n"
     if existing_doc:
         prompt += f"Command: {cmd}\nPatch notes:\n{text}\n\nExisting doc:\n```markdown\n{existing_doc}\n```\n\nGenerate the COMPLETE updated markdown. Preserve structure, update relevant sections. Return ONLY markdown."
@@ -158,7 +170,6 @@ def process_text_for_commands(text, cmd_map):
         
         results.append({
             "command": cmd,
-            "type": "update" if existing_doc else "new",
             "markdown": markdown,
             "existing_path": existing_path
         })
@@ -190,7 +201,8 @@ def process_url_mode(url, cmd_map):
 
 def process_rss_mode(cmd_map, limit=None):
     """Monitor RSS feed for new entries."""
-    print(f"Starting RSS monitor{f' (limit={limit})' if limit else ''}...")
+    limit_msg = f" (limit={limit} entries)" if limit else ""
+    print(f"Starting RSS monitor{limit_msg}...")
     
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     state = json.loads(STATE_FILE.read_text()) if STATE_FILE.exists() else {"seen": [], "max_id": INITIAL_MAX_ID}
@@ -261,8 +273,7 @@ def process_rss_mode(cmd_map, limit=None):
         state["seen"] = (state["seen"] + new_ids)[-200:]
         STATE_FILE.write_text(json.dumps(state, indent=2))
         print(f"[OK] Updated state with {len(new_ids)} new entries, max_id={state['max_id']}")
-    
-    if not new_ids:
+    else:
         print("[i] No new entries")
     
     # Output for GitHub Actions
@@ -285,7 +296,10 @@ def main():
         pass
     
     cmd_map = find_commands()
-    (process_url_mode(args.url, cmd_map) if args.url else process_rss_mode(cmd_map, args.limit))
+    if args.url:
+        process_url_mode(args.url, cmd_map)
+    else:
+        process_rss_mode(cmd_map, args.limit)
 
 if __name__ == "__main__":
     main()
