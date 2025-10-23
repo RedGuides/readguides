@@ -27,6 +27,8 @@ concurrency:
 jobs:
   monitor-rss:
     runs-on: ubuntu-latest
+    # Only run on the main repository, not on forks
+    if: github.repository == 'RedGuides/readguides'
 
     steps:
       - name: Checkout repository (no submodules)

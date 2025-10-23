@@ -16,6 +16,8 @@ jobs:
   update-submodules:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # Only run on the main repository, not on forks
+    if: github.repository == 'RedGuides/readguides'
 
     env:
       # Tokens used by update_submodules.py
