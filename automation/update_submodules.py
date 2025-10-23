@@ -25,15 +25,13 @@ def build_config(push_enabled: bool) -> dict:
     return {
         'gh_token': os.environ.get('GH_API_TOKEN', ''),
         'gl_token': os.environ.get('GITLAB_API_TOKEN', ''),
-        'gh_api': os.environ.get('GH_API', 'https://api.github.com'),
-        'gl_api': os.environ.get('GL_API', 'https://gitlab.com/api/v4'),
         'dry_run': not push_enabled,
     }
 
 
 def get_github_client(cfg: dict) -> Optional[Github]:
     token = cfg.get('gh_token')
-    return Github(auth=Auth.Token(token), base_url=cfg['gh_api']) if token else None
+    return Github(auth=Auth.Token(token)) if token else None
 
 
 # ========================
@@ -55,7 +53,7 @@ def get_github_repo_info(cfg: dict, url: str) -> Optional[dict]:
     # Try with token first, fallback to unauthenticated
     gh = get_github_client(cfg)
     if not gh:
-        gh = Github(base_url=cfg['gh_api'])
+        gh = Github()
     
     with suppress(Exception):
         repo_obj = gh.get_repo(f"{owner}/{repo}")
@@ -119,9 +117,7 @@ def discover_gitlab_upstream(cfg: dict, origin_url: str) -> Optional[str]:
     
     project_path = f"{m.group(1)}/{m.group(2)}"
     with suppress(Exception):
-        gl_api = cfg['gl_api']
-        base_url = gl_api.replace('/api/v4', '') if gl_api.endswith('/api/v4') else gl_api
-        gl = gitlab.Gitlab(base_url, private_token=cfg.get('gl_token'))
+        gl = gitlab.Gitlab(private_token=cfg.get('gl_token'))
         project = gl.projects.get(project_path)
         forked_from = getattr(project, 'forked_from_project', None)
         if isinstance(forked_from, dict) and (parent_ns := forked_from.get('path_with_namespace')):
