@@ -9,21 +9,23 @@ permissions:
   contents: read
 
 concurrency:
-  group: readguides-update-submodules-${{ github.ref }}
-  cancel-in-progress: false
+  group: update-submodules
+  cancel-in-progress: true
 
 jobs:
   update-submodules:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # Only run on the main repository, not on forks
+    if: github.repository == 'RedGuides/readguides'
 
     env:
       # Tokens used by update_submodules.py
       GH_API_TOKEN: ${{ secrets.GH_API_TOKEN }}
       GITLAB_API_TOKEN: ${{ secrets.GITLAB_API_TOKEN }}
-      XF_DONOTREPLY_KEY: ${{ secrets.XF_DONOTREPLY_KEY }}
 
     steps:
-      - name: Checkout repository (no submodules)
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -46,19 +48,30 @@ jobs:
           ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.x'
 
-      - name: Initialize submodules (full history)
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Initialize submodules
         run: |
           git submodule sync --recursive
           git submodule update --init --recursive
 
-      - name: Update all submodules from upstream and push
+      - name: Update submodules from upstream
+        id: update
+        run: python automation/update_submodules.py
+
+      - name: Post to RedGuides forum
+        if: steps.update.outputs.new_pr_created == 'true'
+        uses: RedGuides/redguides-reply@v1
         env:
-          GH_API: https://api.github.com
-          GL_API: https://gitlab.com/api/v4
-        run: python update_submodules.py
+          REDGUIDES_API_KEY: ${{ secrets.XF_DONOTREPLY_KEY }}
+        with:
+          thread-id: '95078'
+          message: |
+            Hi I'm from [URL=${{ steps.update.outputs.script_url }}]update_submodules.py[/URL], [URL=${{ steps.update.outputs.repo_url }}]Read📖Guides[/URL], and I check for updated documentation. Please check my PR: ${{ steps.update.outputs.pr_url }}
 
 

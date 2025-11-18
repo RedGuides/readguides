@@ -6,7 +6,7 @@ A long link to these docs: [www.redguides.com/docs](https://www.redguides.com/do
 
 ## Editing
 
-The "edit" button on any page of the site will ideally take you to the maintainer's repository, even if our version differs a bit. (As of this commit for MQ and a few others it will take you to a fork.)
+The "edit" button on any page of the site will ideally take you to the maintainer's repository, even if our version differs a bit. (As of this commit for a few plugins it will take you to a fork.)
 
 ## Adding your project's docs
 
@@ -25,9 +25,13 @@ The "edit" button on any page of the site will ideally take you to the maintaine
 
 ## Running your own version
 
-The submodules in this repo require symlinks. If you're on a Microsoft product make sure to run the following command to enable them,
-```bash
-git config core.symlinks true
+The submodules in this repo require symlinks. If you're on a Microsoft product make sure to run the following commands to enable them,
+
+```powershell
+git -c core.symlinks=true clone --recurse-submodules https://github.com/RedGuides/readguides.git
+cd readguides
+Get-ChildItem .\docs\projects -Force | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint } | Remove-Item -Force
+git checkout -- docs/projects
 ```
 
 run `python gen_pages.py` to generate some of the index files, and then you're ready to roll! Start a virtual environment -> `pip install -r requirements.txt` -> `mkdocs serve`

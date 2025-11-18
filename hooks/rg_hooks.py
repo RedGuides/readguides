@@ -9,13 +9,15 @@ import mkdocs.plugins
 # Global configurations for both features:
 # - overlap: commands that exist across multiple projects (from overlap-commands.json)
 # - inheritance: datatype inheritance display (from datatype-inheritance.json)
+# - discussion_links: forum discussions that link to documentation pages (from data/thread_links.json)
 _DUPE_CONFIG = {}
 _INHERITANCE_CONFIG = {}
+_THREAD_LINKS = {}
 
 @mkdocs.plugins.event_priority(0) #default priority
 def on_config(config):
-    """Load configs for overlap (overlap-commands.json) and datatype inheritance (datatype-inheritance.json)."""
-    global _DUPE_CONFIG, _INHERITANCE_CONFIG
+    """Load configs for overlap (overlap-commands.json), datatype inheritance (datatype-inheritance.json), and discussion links."""
+    global _DUPE_CONFIG, _INHERITANCE_CONFIG, _THREAD_LINKS
     
     config_dir = Path(config["config_file_path"]).parent.resolve()
     hooks_dir = config_dir / "hooks"
@@ -29,6 +31,19 @@ def on_config(config):
     inheritance_path = hooks_dir / "datatype-inheritance.json"
     if inheritance_path.exists():
         _INHERITANCE_CONFIG = json.loads(inheritance_path.read_text())
+    
+    # Load discussion links (forum threads that link to documentation pages)
+    thread_links_path = config_dir / "data" / "thread_links.json"
+    if thread_links_path.exists():
+        try:
+            _THREAD_LINKS = json.loads(thread_links_path.read_text(encoding='utf-8'))
+            print(f"✅ Loaded {len(_THREAD_LINKS)} discussion link mappings")
+        except Exception as e:
+            print(f"⚠️  Warning: Could not load discussion links: {e}")
+            _THREAD_LINKS = {}
+    else:
+        print(f"ℹ️  No discussion links file found at {thread_links_path}")
+        _THREAD_LINKS = {}
         
     return config
 
@@ -255,8 +270,8 @@ def _should_show_project_attribution(page):
     
     return bool(relevant_tags & page_tags)
 
-def _build_project_attribution_admonition(page, config):
-    """Build project attribution admonition."""
+def _build_project_attribution_data(page, config):
+    """Build project attribution data for template rendering."""
     project_name, project_link = _detect_project_name_from_path(page.file.src_path)
     
     if not project_name or not project_link:
@@ -269,8 +284,33 @@ def _build_project_attribution_admonition(page, config):
         return None
         
     # Calculate relative path from current page to project
-    current_dir = posixpath.dirname(page.file.src_uri)
-    relative_path = posixpath.relpath(project_link, current_dir or ".")
+    # Must account for MkDocs output directory structure:
+    # - index.md/README.md outputs to same directory
+    # - regular files output to subdirectory (foo.md -> foo/)
+    src_uri_parts = posixpath.splitext(page.file.src_uri)
+    src_basename = posixpath.basename(src_uri_parts[0])
+    
+    if src_basename.lower() in ("readme", "index"):
+        # index.md or README.md -> output directory is parent
+        output_dir = posixpath.dirname(page.file.src_uri)
+    else:
+        # regular file -> output directory is parent/stem/
+        output_dir = src_uri_parts[0]  # includes parent and stem without extension
+    
+    relative_path = posixpath.relpath(project_link, output_dir or ".")
+    
+    # Convert .md path to proper MkDocs URL (strip .md, handle index/readme)
+    # e.g., "../../index.md" -> "../../", "../../foo.md" -> "../../foo/"
+    path_parts = posixpath.splitext(relative_path)
+    if path_parts[0].endswith(('/index', '/README', '\\index', '\\README')) or \
+       posixpath.basename(path_parts[0]).lower() in ('index', 'readme'):
+        # index.md or README.md -> use directory path
+        project_url = posixpath.dirname(relative_path) + '/'
+        if project_url == '/':
+            project_url = './'
+    else:
+        # regular file -> strip .md and add trailing slash
+        project_url = path_parts[0] + '/'
     
     # Determine the type from tags
     page_tags = page.meta.get("tags", [])
@@ -283,12 +323,12 @@ def _build_project_attribution_admonition(page, config):
     else:
         item_type = "item"  # fallback
         
-    # Build the admonition
-    admonition = (
-        f'!!! info "This {item_type} is added by [{project_name}]({relative_path})."'
-    )
-    
-    return admonition
+    # Return data dict for template
+    return {
+        "project_name": project_name,
+        "project_url": project_url,
+        "item_type": item_type
+    }
 
 # === FRONTMATTER INFOBOX FUNCTIONALITY ===
 
@@ -362,11 +402,30 @@ def on_page_markdown(markdown, page, config, files):
                     insert_pos = members_end_match.end()
                     markdown = markdown[:insert_pos] + "\n\n" + inheritance_admonition + "\n" + markdown[insert_pos:]
     
-    # Process project attribution (lowest priority - runs last)
+    # Inject discussion links and project attribution into page metadata (for template access)
+    _inject_discussion_links(page)
+    
+    # Process project attribution - store in page.meta for template rendering
     if _should_show_project_attribution(page):
-        attribution_admonition = _build_project_attribution_admonition(page, config)
-        if attribution_admonition:
-            # Append at the end of the document
-            markdown = markdown + "\n\n" + attribution_admonition + "\n"
+        attribution_data = _build_project_attribution_data(page, config)
+        if attribution_data:
+            page.meta['project_attribution'] = attribution_data
     
     return markdown
+
+# === DISCUSSION LINKS FUNCTIONALITY ===
+
+def _inject_discussion_links(page):
+    """Inject forum discussion links into page metadata for template access."""
+    if not _THREAD_LINKS:
+        return
+    
+    # Normalize the page URL (remove trailing slash, convert to lowercase)
+    lookup_key = page.url.strip('/').lower()
+    
+    # Find matching discussion links
+    found_links = _THREAD_LINKS.get(lookup_key, [])
+    
+    # Inject into page metadata for template access
+    if found_links:
+        page.meta['discussion_links'] = found_links

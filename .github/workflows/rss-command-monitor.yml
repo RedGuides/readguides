@@ -1,0 +1,177 @@
+name: Monitor EQ RSS Feed for Command Updates
+
+on:
+  # Triggered by IFTTT webhook when RSS feed updates
+  repository_dispatch:
+    types: [rss_feed_updated]
+  # Fallback: Run daily at 8 AM UTC in case webhook misses something
+  schedule:
+    - cron: '0 8 * * *'
+  # Manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      clear_cache:
+        description: 'Clear RSS feed state cache before running'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: rss-command-monitor
+  cancel-in-progress: true
+
+jobs:
+  monitor-rss:
+    runs-on: ubuntu-latest
+    # Only run on the main repository, not on forks
+    if: github.repository == 'RedGuides/readguides'
+
+    steps:
+      - name: Checkout repository (no submodules)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          submodules: false
+
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.SUBMODULES_SSH_KEY }}
+
+      - name: Configure Git for SSH submodules
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+          git config --global url."git@gitlab.com:".insteadOf "https://gitlab.com/"
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+
+      - name: Initialize everquest-docs submodule
+        run: |
+          git submodule sync -- docs/projects/everquest
+          git submodule update --init --recursive docs/projects/everquest
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Clear cache (if requested)
+        if: ${{ inputs.clear_cache }}
+        run: |
+          rm -rf .cache
+          echo "Cache cleared! Next run will start fresh."
+
+      - name: Restore RSS feed state cache
+        if: ${{ !inputs.clear_cache }}
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: rss-feed-state-${{ github.run_id }}
+          restore-keys: |
+            rss-feed-state-
+
+      - name: Run RSS monitor script
+        id: rss_monitor
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          python automation/rss_patch_command_monitor.py
+
+      - name: Check for changes in submodule
+        id: check_changes
+        working-directory: docs/projects/everquest
+        run: |
+          if git diff --quiet commands/; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request in everquest-docs repo
+        id: create_pr
+        if: steps.check_changes.outputs.has_changes == 'true'
+        working-directory: docs/projects/everquest
+        env:
+          GH_TOKEN: ${{ secrets.GH_API_TOKEN }}
+        run: |
+          BRANCH_NAME="rss-update-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH_NAME"
+          git add commands/
+          
+          NEW_FILES=$(git diff --cached --name-status | grep "^A" | sed 's/^A\s*//' | sed 's/.*cmd-/\//' | sed 's/.md$//' | tr '\n' ' ')
+          UPDATED_FILES=$(git diff --cached --name-status | grep "^M" | sed 's/^M\s*//' | sed 's/.*cmd-/\//' | sed 's/.md$//' | tr '\n' ' ')
+          NUM_CHANGES=$(git diff --cached --name-only | wc -l)
+          
+          git commit -m "Update EQ command documentation from RSS feed"
+          git push origin "$BRANCH_NAME"
+          
+          PR_BODY="Automated command documentation updates from EQ patch notes.
+          
+          **Changed:** $NUM_CHANGES command(s)"
+          
+          if [ -n "$NEW_FILES" ]; then
+            PR_BODY="${PR_BODY}
+          **New:**${NEW_FILES}"
+          fi
+          
+          if [ -n "$UPDATED_FILES" ]; then
+            PR_BODY="${PR_BODY}
+          **Updated:**${UPDATED_FILES}"
+          fi
+          
+          PATCH_NOTES='${{ steps.rss_monitor.outputs.patch_notes }}'
+          if [ -n "$PATCH_NOTES" ]; then
+            PR_BODY="${PR_BODY}
+          
+          **Source:**
+          $(echo "$PATCH_NOTES" | jq -r '.[] | "- [\(.title)](\(.link))"')"
+          fi
+          
+          # Create PR in the everquest-docs repository
+          PR_URL=$(gh pr create \
+            --repo RedGuides/everquest-docs \
+            --title "Command docs update from EQ patch notes" \
+            --body "$PR_BODY" \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --draft)
+          
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+          echo "num_changes=$NUM_CHANGES" >> $GITHUB_OUTPUT
+          echo "new_files=$NEW_FILES" >> $GITHUB_OUTPUT
+          echo "updated_files=$UPDATED_FILES" >> $GITHUB_OUTPUT
+          echo "first_patch_note=$(echo "$PATCH_NOTES" | jq -r '.[0].link // empty')" >> $GITHUB_OUTPUT
+
+      - name: Post to RedGuides forum
+        if: steps.create_pr.outputs.pr_url != ''
+        uses: RedGuides/redguides-reply@v1
+        env:
+          REDGUIDES_API_KEY: ${{ secrets.XF_DONOTREPLY_KEY }}
+        with:
+          thread-id: '95078'
+          message: |
+            Hi! I'm from [URL=https://github.com/RedGuides/readguides/blob/master/automation/rss_patch_command_monitor.py]rss_patch_command_monitor.py[/URL], [URL=https://github.com/RedGuides/readguides]Read📖Guides[/URL]. I read EQ patch notes on acid.
+            
+            I found ${{ steps.create_pr.outputs.num_changes }} command(s) in [URL=${{ steps.create_pr.outputs.first_patch_note }}]recent patch notes[/URL] worth updating over at https://github.com/RedGuides/everquest-docs 
+            
+            Please check my PR: ${{ steps.create_pr.outputs.pr_url }}
+

@@ -334,6 +334,34 @@ def generate_type_item(entry: Dict, item_type: str, output_file_path: str, docs_
     return "\n\n".join(parts)
 
 
+def generate_flat_commands_index(entries: List[Dict]) -> str:
+    """Generate flat command list (no sections) for EverQuest commands."""
+    if not entries:
+        return "No command files found to index."
+    
+    parts = []
+    for entry in entries:
+        macro_path = entry['path']
+        file_stem = Path(entry['path']).stem
+        
+        command_block = f"""<a href="{file_stem}">
+{{%
+  include-markdown "{macro_path}"
+  start="<!--cmd-syntax-start-->"
+  end="<!--cmd-syntax-end-->"
+%}}
+</a>
+:    {{% 
+        include-markdown "{macro_path}"
+        start="<!--cmd-desc-start-->"
+        end="<!--cmd-desc-end-->"
+        trailing-newlines=false
+     %}} {{{{ readMore('{macro_path}') }}}}"""
+        parts.append(command_block)
+    
+    return "\n\n".join(parts)
+
+
 # =============================================================================
 # MAIN PROCESSING
 # =============================================================================
@@ -506,6 +534,36 @@ def generate_scripts_index(docs_dir_path: Path, script_name: str):
     print("Scripts index generation complete.")
 
 
+def generate_everquest_commands_index(docs_dir_path: Path, script_name: str):
+    """Generate the EverQuest-specific commands index."""
+    print("\nGenerating EverQuest commands index...")
+    
+    # Find all command files and filter for EverQuest
+    all_entries = find_tagged_files('command', docs_dir_path)
+    eq_entries = [
+        entry for entry in all_entries 
+        if entry['path'].startswith('projects/everquest/commands/')
+    ]
+    
+    if eq_entries:
+        print(f"Found {len(eq_entries)} EverQuest command files.")
+        content = generate_flat_commands_index(eq_entries)
+    else:
+        print("No EverQuest command files found.")
+        content = "No EverQuest command files found to index."
+    
+    write_generated_content(
+        content,
+        "projects/everquest/commands/index.md",
+        "<!-- BEGIN GENERATED EVERQUEST COMMANDS -->",
+        "<!-- END GENERATED EVERQUEST COMMANDS -->",
+        script_name,
+        docs_dir_path
+    )
+    
+    print("EverQuest commands index generation complete.")
+
+
 def main():
     """Generate all content indexes."""
     print("Starting documentation index generation...")
@@ -519,6 +577,7 @@ def main():
     generate_datatypes_index(docs_dir_path, script_name)
     generate_plugins_index(docs_dir_path, script_name)
     generate_scripts_index(docs_dir_path, script_name)
+    generate_everquest_commands_index(docs_dir_path, script_name)
     
     print("\nDocumentation index generation complete!")
 

@@ -3,6 +3,10 @@ garbage/
 
 # MkDocs build files (if generated)
 site/
+docs/projects/macroquest/site/
+
+# Discussion mapper generated data
+thread_links.json
 
 # Python
 __pycache__/

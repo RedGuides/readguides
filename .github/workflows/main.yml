@@ -1,6 +1,8 @@
 name: Build ReadGuides Documentation & Deploy via SSH
 
 on:
+  push:
+    branches: [ "master" ]
   workflow_dispatch:
 
 permissions:
@@ -13,6 +15,8 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    # Only run on the main repository, not on forks
+    if: github.repository == 'RedGuides/readguides'
 
     env:
       # Environment variables for deployment and auth
@@ -20,6 +24,12 @@ jobs:
       TARGET_USER:  ${{ secrets.TARGET_USER }}
       TARGET_DIR:   ${{ secrets.TARGET_DIR }}
       TARGET_OWNER: ${{ secrets.TARGET_OWNER }}
+      # Environment variables for discussion mapper
+      REDGUIDES_HOST:    ${{ secrets.REDGUIDES_HOST }}
+      REDGUIDES_USER:    ${{ secrets.REDGUIDES_USER }}
+      REDGUIDES_DB_USER: ${{ secrets.REDGUIDES_DB_USER }}
+      REDGUIDES_DB_PASS: ${{ secrets.REDGUIDES_DB_PASS }}
+      REDGUIDES_DB_NAME: ${{ secrets.REDGUIDES_DB_NAME }}
 
     steps:
       # Checkout source WITHOUT submodules first
@@ -75,6 +85,15 @@ jobs:
       # Generate documentation pages
       - name: Generate documentation pages
         run: python gen_pages.py
+
+      # Add database host to known_hosts for discussion mapper
+      - name: Add database host to known_hosts
+        run: |
+          ssh-keyscan -H ${{ env.REDGUIDES_HOST }} >> ~/.ssh/known_hosts
+
+      # Generate discussion map (requires SSH access to database)
+      - name: Generate discussion map
+        run: python automation/generate_discussion_map.py
 
       # Build the static site
       - name: Build readguides documentation
@@ -135,7 +154,7 @@ jobs:
             echo "✅  ReadGuides documentation deploy complete"
           EOF
 
-      # Purge Cloudflare cache
+      # Purge Cloudflare cache for /docs only
       - name: Purge Cloudflare cache
         # Only run if the previous steps were successful
         if: success()
@@ -144,4 +163,5 @@ jobs:
           # Map existing secrets to the expected input names for this action
           cf_zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           cf_auth: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          # By default, without files/tags/hosts/prefixes, it purges everything
+          # Purge only the /docs directory
+          prefixes: "www.redguides.com/docs/"
