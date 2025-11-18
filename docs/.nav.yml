@@ -10,6 +10,7 @@ nav:
     - Developing:
       - Building: 
         - Building: projects/macroquest/main/building.md
+        - Using cmake: projects/macroquest/main/developing/cmake.md
         - Plugin Quick List: projects/macroquest/main/plugin-quick-list.md
       - Lua: projects/macroquest/lua
       - Macros:
