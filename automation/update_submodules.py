@@ -333,11 +333,18 @@ def commit_superproject_changes_and_open_pr(cfg: dict, super_repo: Repo, updated
         origin_refs = [r.name for r in super_repo.remotes.origin.refs]  # type: ignore
         try:
             if f"origin/{new_branch}" in origin_refs:
+                # Start from the remote tracking branch and then merge the latest base branch
                 super_repo.git.checkout('-B', new_branch, f"origin/{new_branch}")
+                try:
+                    super_repo.git.merge('--no-edit', f"origin/{base_branch}")
+                    print(f"Synced '{new_branch}' with '{base_branch}'")
+                except GitCommandError as e:
+                    print(f"Failed to merge {base_branch} into {new_branch}: {e}")
+                    return False
             else:
                 super_repo.git.checkout('-B', new_branch, f"origin/{base_branch}")
         except GitCommandError as e:
-            print(f"Failed to create branch {new_branch}: {e}")
+            print(f"Failed to create or update branch {new_branch}: {e}")
             return False
 
         # Stage changed submodule paths
