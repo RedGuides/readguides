@@ -330,21 +330,11 @@ def commit_superproject_changes_and_open_pr(cfg: dict, super_repo: Repo, updated
         
         # Create/checkout rolling update branch
         new_branch = "auto/submodule-updates"
-        origin_refs = [r.name for r in super_repo.remotes.origin.refs]  # type: ignore
         try:
-            if f"origin/{new_branch}" in origin_refs:
-                # Start from the remote tracking branch and then merge the latest base branch
-                super_repo.git.checkout('-B', new_branch, f"origin/{new_branch}")
-                try:
-                    super_repo.git.merge('--no-edit', f"origin/{base_branch}")
-                    print(f"Synced '{new_branch}' with '{base_branch}'")
-                except GitCommandError as e:
-                    print(f"Failed to merge {base_branch} into {new_branch}: {e}")
-                    return False
-            else:
-                super_repo.git.checkout('-B', new_branch, f"origin/{base_branch}")
+            super_repo.git.checkout('-B', new_branch, f"origin/{base_branch}")
+            print(f"Created/reset '{new_branch}' from 'origin/{base_branch}'")
         except GitCommandError as e:
-            print(f"Failed to create or update branch {new_branch}: {e}")
+            print(f"Failed to create or reset branch {new_branch}: {e}")
             return False
 
         # Stage changed submodule paths
@@ -376,9 +366,9 @@ def commit_superproject_changes_and_open_pr(cfg: dict, super_repo: Repo, updated
             print(f"Dry run: would push '{new_branch}' and open PR -> '{base_branch}'")
             return True
 
-        # Push branch
+        # Push branch (force-with-lease since this is an automation-only branch)
         try:
-            super_repo.remotes.origin.push(f"{new_branch}:{new_branch}")  # type: ignore
+            super_repo.git.push('origin', '--force-with-lease', f"{new_branch}:{new_branch}")
         except GitCommandError as e:
             print(f"Failed to push: {e}")
             return False
@@ -498,5 +488,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
