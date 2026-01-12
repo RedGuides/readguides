@@ -113,6 +113,7 @@ exclude_docs: |
   /projects/macroquest/macros/gallery/
   /projects/macroquest/reference/commands/eq/
   /projects/macroquest/main/**
+  !/projects/macroquest/main/claude-code-integration.md
   !/projects/macroquest/main/macroquest.ini.md
   !/projects/macroquest/main/macroquest-launcher.md
   !/projects/macroquest/main/hacker-stuff.md

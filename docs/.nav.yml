@@ -1,17 +1,26 @@
 nav:
   - Main Page: index.md
+  - Tags: tags.md
   - EverQuest:
     - projects/everquest/index.md
     - projects/everquest/configuration.md
     - projects/everquest/commands
   - MacroQuest:
     - projects/macroquest/index.md
+    - Tags: projects/macroquest/tags.md
     - Core Plugins: https://www.redguides.com/docs/projects/macroquest/plugins/core-plugins/
     - Developing:
       - Building: 
         - Building: projects/macroquest/main/building.md
         - Using cmake: projects/macroquest/main/developing/cmake.md
         - Plugin Quick List: projects/macroquest/main/plugin-quick-list.md
+      - AI Helpers:
+        - Claude Code Integration: projects/macroquest/main/claude-code-integration.md
+        - Claude Integration Files: projects/macroquest/ai_helpers/claude/README.md
+        - Claude Coordinator (Full): projects/macroquest/ai_helpers/claude/mq-full.md
+        - Claude Command Stub: projects/macroquest/ai_helpers/claude/mq-stub.md
+        - MacroQuest Researcher Agent (Full): projects/macroquest/ai_helpers/claude/MacroQuest-Researcher-Full.md
+        - MacroQuest Expert Agent (Full): projects/macroquest/ai_helpers/claude/MacroQuest-Expert-Full.md
       - Lua: projects/macroquest/lua
       - Macros:
         - projects/macroquest/macros/*.md
@@ -50,12 +59,15 @@ nav:
         sort:
           by: filename
           direction: asc
+    - History of MacroQuest: projects/macroquest/main/history-of-macroquest.md
     - MacroQuest Config: projects/macroquest/main/macroquest.ini.md
     - MacroQuest Launcher: projects/macroquest/main/macroquest-launcher.md
     - MacroQuest TLOs: projects/macroquest/reference/top-level-objects
     - MacroQuest DataTypes: projects/macroquest/reference/data-types
   - Plugins:
     - plugins/index.md
+    - MacroQuest Plugins (Overview): projects/macroquest/plugins/README.md
+    - MacroQuest Plugins (General Help): projects/macroquest/plugins/general-help.md
     - Core Plugins: projects/macroquest/plugins/core-plugins
     - glob: "projects/mq*"
       preserve_directory_names: true
@@ -71,5 +83,6 @@ nav:
     - All Commands: commands
     - All TLOs: tlos
     - All Data Types: datatypes
+    - MacroQuest Reference (README): projects/macroquest/reference/README.md
     - projects/macroquest/reference/general/*.md
     - projects/everquest/general/*.md
