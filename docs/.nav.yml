@@ -14,13 +14,7 @@ nav:
         - Building: projects/macroquest/main/building.md
         - Using cmake: projects/macroquest/main/developing/cmake.md
         - Plugin Quick List: projects/macroquest/main/plugin-quick-list.md
-      - AI Helpers:
-        - Claude Code Integration: projects/macroquest/main/claude-code-integration.md
-        - Claude Integration Files: projects/macroquest/ai_helpers/claude/README.md
-        - Claude Coordinator (Full): projects/macroquest/ai_helpers/claude/mq-full.md
-        - Claude Command Stub: projects/macroquest/ai_helpers/claude/mq-stub.md
-        - MacroQuest Researcher Agent (Full): projects/macroquest/ai_helpers/claude/MacroQuest-Researcher-Full.md
-        - MacroQuest Expert Agent (Full): projects/macroquest/ai_helpers/claude/MacroQuest-Expert-Full.md
+      - Claude Code Integration: projects/macroquest/main/claude-code-integration.md
       - Lua: projects/macroquest/lua
       - Macros:
         - projects/macroquest/macros/*.md

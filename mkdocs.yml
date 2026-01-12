@@ -107,6 +107,7 @@ extra_javascript:
 
 exclude_docs: |
   /projects/macroquest/README.md
+  /projects/macroquest/ai_helpers/
   /projects/macroquest/plugins/community-plugins/
   /projects/macroquest/vendor/
   /projects/macroquest/plugins/discontinued/
