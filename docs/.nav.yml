@@ -1,13 +1,11 @@
 nav:
   - Main Page: index.md
-  - Tags: tags.md
   - EverQuest:
     - projects/everquest/index.md
     - projects/everquest/configuration.md
     - projects/everquest/commands
   - MacroQuest:
     - projects/macroquest/index.md
-    - Tags: projects/macroquest/tags.md
     - Core Plugins: https://www.redguides.com/docs/projects/macroquest/plugins/core-plugins/
     - Developing:
       - Building: 
@@ -53,15 +51,12 @@ nav:
         sort:
           by: filename
           direction: asc
-    - History of MacroQuest: projects/macroquest/main/history-of-macroquest.md
     - MacroQuest Config: projects/macroquest/main/macroquest.ini.md
     - MacroQuest Launcher: projects/macroquest/main/macroquest-launcher.md
     - MacroQuest TLOs: projects/macroquest/reference/top-level-objects
     - MacroQuest DataTypes: projects/macroquest/reference/data-types
   - Plugins:
     - plugins/index.md
-    - MacroQuest Plugins (Overview): projects/macroquest/plugins/README.md
-    - MacroQuest Plugins (General Help): projects/macroquest/plugins/general-help.md
     - Core Plugins: projects/macroquest/plugins/core-plugins
     - glob: "projects/mq*"
       preserve_directory_names: true
@@ -77,6 +72,5 @@ nav:
     - All Commands: commands
     - All TLOs: tlos
     - All Data Types: datatypes
-    - MacroQuest Reference (README): projects/macroquest/reference/README.md
     - projects/macroquest/reference/general/*.md
     - projects/everquest/general/*.md
