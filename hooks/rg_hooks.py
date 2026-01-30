@@ -37,12 +37,12 @@ def on_config(config):
     if thread_links_path.exists():
         try:
             _THREAD_LINKS = json.loads(thread_links_path.read_text(encoding='utf-8'))
-            print(f"✅ Loaded {len(_THREAD_LINKS)} discussion link mappings")
+            print(f"[INFO] Loaded {len(_THREAD_LINKS)} discussion link mappings")
         except Exception as e:
-            print(f"⚠️  Warning: Could not load discussion links: {e}")
+            print(f"[WARN] Could not load discussion links: {e}")
             _THREAD_LINKS = {}
     else:
-        print(f"ℹ️  No discussion links file found at {thread_links_path}")
+        print(f"[INFO] No discussion links file found at {thread_links_path}")
         _THREAD_LINKS = {}
         
     return config
