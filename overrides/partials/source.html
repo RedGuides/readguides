@@ -1,0 +1,13 @@
+{#-
+  Override Material's repo ("source") link in the header.
+  We keep repo_url in mkdocs.yml for edit-link logic, but avoid showing any git/repo UI.
+-#}
+<a href="https://www.redguides.com/" title="RedGuides" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    {% set icon = "material/home" %}
+    {% include ".icons/" ~ icon ~ ".svg" %}
+  </div>
+  <div class="md-source__repository">
+    RedGuides
+  </div>
+</a>
