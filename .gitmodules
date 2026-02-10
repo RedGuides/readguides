@@ -308,8 +308,8 @@
 	branch = readguides
 [submodule "vendor/MQ2Discord"]
 	path = vendor/MQ2Discord
-	url = https://gitlab.com/Redbot/MQ2Discord.git
-	branch = readguides
+	url = https://github.com/RedGuides/MQ2Discord.git
+	branch = master
 [submodule "vendor/MQ2EasyFind"]
 	path = vendor/MQ2EasyFind
 	url = https://github.com/Redbot/MQ2EasyFind.git
