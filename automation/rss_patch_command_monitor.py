@@ -74,7 +74,11 @@ def get_deepseek_client():
 def deepseek_chat(messages, temperature=1.0, max_tokens=8192, use_reasoner=False):
     """Call DeepSeek API using OpenAI SDK."""
     client = get_deepseek_client()
-    model = "deepseek-reasoner" if use_reasoner else "deepseek-chat"
+    model = (
+        os.getenv("DEEPSEEK_REASONING_MODEL", "deepseek-v4-pro")
+        if use_reasoner
+        else os.getenv("DEEPSEEK_CHAT_MODEL", "deepseek-v4-flash")
+    )
     resp = client.chat.completions.create(model=model, messages=messages, 
                                           temperature=temperature, max_tokens=max_tokens)
     return resp.choices[0].message.content.strip()
@@ -107,11 +111,31 @@ def extract_commands_from_text(text):
     print("-> Asking LLM to extract commands...")
     resp = deepseek_chat([
         {"role": "system", "content": "You are an EverQuest command extractor. Return ONLY a JSON array of command names."},
-        {"role": "user", "content": f"Extract slash commands from these patch notes. For commands with args like '/outputfile inventory', return only base '/outputfile'.\n\nReturn ONLY JSON array: []\n\nPatch notes:\n{text}"}
+        {"role": "user", "content": f"Extract slash commands from these patch notes. For commands with args like '/examplecommand foo', return only base '/examplecommand'. Do not return commands from examples unless they appear in the patch notes.\n\nReturn ONLY JSON array: []\n\nPatch notes:\n{text}"}
     ], temperature=0.0, max_tokens=512)
-    commands = json.loads(resp)
+    commands = filter_commands_mentioned_in_text(json.loads(resp), text)
     print(f"[OK] Extracted {len(commands)} commands: {commands}")
     return commands
+
+def extract_literal_commands(text):
+    """Return base slash commands literally present in text."""
+    return {cmd.lower() for cmd in re.findall(r"(?<!\w)/([a-z][a-z0-9_]*)\b", text, flags=re.I)}
+
+def filter_commands_mentioned_in_text(commands, text):
+    """Drop extracted commands that are not present in the source text."""
+    mentioned = extract_literal_commands(text)
+    filtered = []
+    seen = set()
+    for cmd in commands:
+        normalized = str(cmd).lstrip("/").lower()
+        if normalized not in mentioned:
+            print(f"  -> Ignoring `/{normalized}`; not found in patch notes")
+            continue
+        if normalized in seen:
+            continue
+        filtered.append(f"/{normalized}")
+        seen.add(normalized)
+    return filtered
 
 def generate_doc(cmd, text, existing_doc, related_docs=None):
     """Generates the markdown for a single command using the LLM."""
@@ -238,6 +262,9 @@ def process_text_for_commands(text, cmd_map):
         
         print(f"  -> Generating {'updated' if existing_doc else 'new'} doc...")
         markdown = generate_doc(cmd, text, existing_doc, related_docs)
+        if existing_doc and markdown.rstrip() == existing_doc.rstrip():
+            print(f"  -> No meaningful changes for {cmd}, skipping\n")
+            continue
         print(f"  [OK] {len(markdown)} chars\n")
         
         results.append({

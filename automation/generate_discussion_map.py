@@ -2,6 +2,7 @@ import pymysql
 import logging
 import sys
 import os
+from pathlib import Path
 from sshtunnel import SSHTunnelForwarder
 from sshtunnel import BaseSSHTunnelForwarderError
 import re
@@ -33,8 +34,38 @@ DB_THREAD_NODEID_COLUMN = 'node_id'
 DB_THREAD_STATE_COLUMN = 'discussion_state'
 
 # Target URL Pattern Configuration
-TARGET_BASE_URL = 'redguides.com/docs/'
 FORUM_THREAD_BASE_URL = 'https://www.redguides.com/community/threads/'
+DOCS_DIR = Path(__file__).resolve().parent.parent / 'docs'
+MACROQUEST_PREFIX = 'projects/macroquest'
+MACROQUEST_ROOT_KEY = MACROQUEST_PREFIX
+MACROQUEST_MKDOCS = DOCS_DIR / 'projects' / 'macroquest' / 'mkdocs.yml'
+
+# Documentation sites in the umbrella. Forum posts may link to any of these;
+# captured paths are normalized to redguides.com/docs/ page keys (MkDocs page.url).
+DOC_URL_SOURCES = [
+    {
+        'name': 'redguides',
+        'like_pattern': '%redguides.com/docs/%',
+        'pattern': re.compile(
+            r'(?:https?://)?'
+            r'(?:www\.)?'
+            r'redguides\.com/docs/'
+            r'([^#\s\'"<>\[\]]*)',
+            re.IGNORECASE,
+        ),
+    },
+    {
+        'name': 'macroquest',
+        'like_pattern': '%docs.macroquest.org%',
+        'pattern': re.compile(
+            r'(?:https?://)?'
+            r'(?:www\.)?'
+            r'docs\.macroquest\.org'
+            r'(?:/([^#\s\'"<>\[\]]*))?',
+            re.IGNORECASE,
+        ),
+    },
+]
 
 # Filtering Configuration
 EXCLUDED_NODE_IDS = [61, 31]  # Moderator forums
@@ -51,9 +82,89 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)]
 )
 
-def generate_map():
+
+def file_path_to_page_key(relative_path: str) -> str:
+    """Convert a docs-relative markdown path to a thread_links.json lookup key."""
+    path = Path(relative_path.replace('\\', '/').lower())
+    if path.suffix == '.md':
+        path = path.with_suffix('')
+    if path.name in ('index', 'readme'):
+        key = path.parent.as_posix()
+        return '' if key == '.' else key
+    return path.as_posix()
+
+
+def build_page_index(docs_dir: Path) -> set[str]:
+    """Build the set of valid MkDocs page.url lookup keys under docs/."""
+    keys = set()
+    for md_file in docs_dir.rglob('*.md'):
+        rel = md_file.relative_to(docs_dir).as_posix()
+        keys.add(file_path_to_page_key(rel))
+    return keys
+
+
+def load_macroquest_redirect_aliases() -> dict[str, str]:
+    """Load MacroQuest mkdocs redirect_maps as page-key aliases."""
+    if not MACROQUEST_MKDOCS.exists():
+        return {}
+
+    aliases = {}
+    content = MACROQUEST_MKDOCS.read_text(encoding='utf-8')
+    for match in re.finditer(
+        r'"([^"]+\.md(?:#[^"]*)?)":\s*"([^"]+\.md(?:#[^"]*)?)"',
+        content,
+    ):
+        source_file, target_file = match.groups()
+        source_key = file_path_to_page_key(f'{MACROQUEST_PREFIX}/{source_file.split("#")[0]}')
+        target_key = file_path_to_page_key(f'{MACROQUEST_PREFIX}/{target_file.split("#")[0]}')
+        if source_key != target_key:
+            aliases[source_key] = target_key
+    return aliases
+
+
+def normalize_captured_path(raw_path: str) -> str:
+    """Normalize a URL path segment captured from forum post content."""
+    return raw_path.strip('/').lower()
+
+
+def source_path_to_page_key(source_name: str, raw_path: str) -> str | None:
+    """Map a captured docs URL path to a redguides page key."""
+    path = normalize_captured_path(raw_path)
+    if source_name == 'macroquest':
+        if not path:
+            return MACROQUEST_ROOT_KEY
+        return f'{MACROQUEST_PREFIX}/{path}'
+    if source_name == 'redguides':
+        if not path:
+            return None
+        return path
+    return None
+
+
+def resolve_page_key(page_key: str, redirect_aliases: dict[str, str]) -> str:
+    """Follow MacroQuest redirect aliases to the canonical page key."""
+    seen = set()
+    resolved = page_key
+    while resolved in redirect_aliases and resolved not in seen:
+        seen.add(resolved)
+        resolved = redirect_aliases[resolved]
+    return resolved
+
+
+def extract_doc_links(content: str, redirect_aliases: dict[str, str]):
+    """Yield (source_name, canonical_page_key) pairs found in post content."""
+    for source in DOC_URL_SOURCES:
+        for match in source['pattern'].finditer(content):
+            raw_path = match.group(1) or ''
+            page_key = source_path_to_page_key(source['name'], raw_path)
+            if not page_key:
+                continue
+            yield source['name'], resolve_page_key(page_key, redirect_aliases)
+
+
+def generate_map(page_index: set[str], redirect_aliases: dict[str, str]):
     """Connects to the DB, scans posts, and generates the discussion map."""
-    print("Starting discussion map generation...")
+    print('Starting discussion map generation...')
 
     # Validate required environment variables
     required_env_vars = {
@@ -68,18 +179,9 @@ def generate_map():
         print(f"Missing required environment variables: {', '.join(missing_vars)}")
         sys.exit(1)
 
-    # Regex pattern for matching documentation URLs
-    # Captures the path after /docs/, stopping at anchors, whitespace, or special chars
-    url_pattern = re.compile(
-        r'(?:https?://)?'                        # Optional protocol
-        r'(?:www\.)?'                            # Optional www.
-        r'redguides\.com/docs/'                  # Base URL
-        r'([^#\s\'"<>\[\]]+)',                   # Capture path (stop at anchor, whitespace, quotes, brackets)
-        re.IGNORECASE
-    )
-
     discussion_map = {}  # Structure: { "page/path": {"threads": [list_of_thread_dicts], "seen_threads": set()} }
     thread_info_cache = {}  # Cache thread titles to reduce DB queries: {thread_id: title}
+    unknown_page_keys = set()
 
     try:
         print(f"Establishing SSH tunnel to {SSH_HOST}...")
@@ -109,13 +211,19 @@ def generate_map():
                 with connection.cursor() as post_cursor:
                     with connection.cursor() as thread_cursor:
                         print("Querying posts for documentation URLs...")
+                        like_clauses = " OR ".join(
+                            f"`{DB_CONTENT_COLUMN}` LIKE %s"
+                            for _ in DOC_URL_SOURCES
+                        )
                         post_query = f"""
                             SELECT `{DB_POSTID_COLUMN}`, `{DB_THREADID_COLUMN_IN_POST}`, `{DB_CONTENT_COLUMN}`
                             FROM `{DB_POST_TABLE}`
-                            WHERE `{DB_CONTENT_COLUMN}` LIKE %s
+                            WHERE {like_clauses}
                         """
-                        like_pattern = f"%{TARGET_BASE_URL}%"
-                        post_cursor.execute(post_query, (like_pattern,))
+                        post_cursor.execute(
+                            post_query,
+                            tuple(source["like_pattern"] for source in DOC_URL_SOURCES),
+                        )
 
                         all_posts = post_cursor.fetchall()
                         total_posts_found = len(all_posts)
@@ -123,6 +231,7 @@ def generate_map():
 
                         processed_count = 0
                         links_found_count = 0
+                        macroquest_link_count = 0
                         
                         for post in all_posts:
                             processed_count += 1
@@ -136,18 +245,12 @@ def generate_map():
                             if processed_count % 1000 == 0:
                                 print(f"Processed {processed_count}/{total_posts_found} posts...")
 
-                            # Find all documentation URLs in this post
-                            matches = url_pattern.finditer(content)
-                            for match in matches:
+                            for source_name, page_key in extract_doc_links(content, redirect_aliases):
                                 links_found_count += 1
-                                page_path = match.group(1)
-                                
-                                # Normalize the path: strip trailing slashes, convert to lowercase
-                                page_path = page_path.rstrip('/').lower()
-                                
-                                # Skip empty paths
-                                if not page_path:
-                                    continue
+                                if source_name == 'macroquest':
+                                    macroquest_link_count += 1
+                                if page_key not in page_index:
+                                    unknown_page_keys.add(page_key)
 
                                 # Get thread title (use cache if available)
                                 if thread_id not in thread_info_cache:
@@ -177,23 +280,23 @@ def generate_map():
                                     continue
 
                                 # Initialize entry in map if first time seeing this page path
-                                if page_path not in discussion_map:
-                                    discussion_map[page_path] = {"threads": [], "seen_threads": set()}
+                                if page_key not in discussion_map:
+                                    discussion_map[page_key] = {"threads": [], "seen_threads": set()}
 
                                 # Add thread info if not already added for this specific page
-                                if thread_id not in discussion_map[page_path]["seen_threads"]:
+                                if thread_id not in discussion_map[page_key]["seen_threads"]:
                                     thread_url = f"{FORUM_THREAD_BASE_URL.rstrip('/')}/{thread_id}/post-{post_id}"
                                     thread_data = {
                                         "thread_title": thread_title,
                                         "thread_url": thread_url,
                                         "post_id": post_id  # Track post_id for sorting
                                     }
-                                    discussion_map[page_path]["threads"].append(thread_data)
-                                    discussion_map[page_path]["seen_threads"].add(thread_id)
+                                    discussion_map[page_key]["threads"].append(thread_data)
+                                    discussion_map[page_key]["seen_threads"].add(thread_id)
                                 # If we've seen this thread before, update to the highest post_id
                                 else:
                                     # Find the existing thread entry and update if this post_id is higher
-                                    for thread_data in discussion_map[page_path]["threads"]:
+                                    for thread_data in discussion_map[page_key]["threads"]:
                                         if thread_data["thread_url"].startswith(f"{FORUM_THREAD_BASE_URL.rstrip('/')}/{thread_id}/"):
                                             # Extract current post_id from URL
                                             current_post_id = int(thread_data["thread_url"].split("post-")[-1])
@@ -205,7 +308,14 @@ def generate_map():
 
                 print(f"\nProcessing complete!")
                 print(f"Found {links_found_count} total documentation URL references")
+                print(f"  including {macroquest_link_count} docs.macroquest.org references")
                 print(f"Mapped to {len(discussion_map)} unique documentation pages")
+                if unknown_page_keys:
+                    sample = sorted(unknown_page_keys)[:10]
+                    print(
+                        f"Warning: {len(unknown_page_keys)} mapped page key(s) not found in docs tree "
+                        f"(showing up to 10): {', '.join(sample)}"
+                    )
 
                 # Clean up and process the map:
                 # 1. Sort threads by post_id (highest/newest first)
@@ -252,9 +362,15 @@ def generate_map():
         traceback.print_exc()
         sys.exit(1)
 
+
 # --- Main Execution ---
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate a map of forum discussions linking to MkDocs pages.')
     args = parser.parse_args()
-    generate_map()
+
+    page_index = build_page_index(DOCS_DIR)
+    redirect_aliases = load_macroquest_redirect_aliases()
+    print(f"Loaded {len(page_index)} docs pages and {len(redirect_aliases)} MacroQuest redirect alias(es).")
+
+    generate_map(page_index, redirect_aliases)
     sys.exit(0)
