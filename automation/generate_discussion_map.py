@@ -96,10 +96,16 @@ def file_path_to_page_key(relative_path: str) -> str:
 
 def build_page_index(docs_dir: Path) -> set[str]:
     """Build the set of valid MkDocs page.url lookup keys under docs/."""
+    # Walk with followlinks=True so symlinked vendor docs (e.g.
+    # docs/projects/kissassist -> vendor/kissassist/docs) are indexed,
+    # matching how MkDocs and gen_pages.py discover pages.
     keys = set()
-    for md_file in docs_dir.rglob('*.md'):
-        rel = md_file.relative_to(docs_dir).as_posix()
-        keys.add(file_path_to_page_key(rel))
+    for root, _dirs, files in os.walk(docs_dir, followlinks=True):
+        for filename in files:
+            if not filename.lower().endswith('.md'):
+                continue
+            rel = Path(os.path.join(root, filename)).relative_to(docs_dir).as_posix()
+            keys.add(file_path_to_page_key(rel))
     return keys
 
 
