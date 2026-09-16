@@ -10,12 +10,21 @@ from pathlib import Path
 from difflib import SequenceMatcher
 from bs4 import BeautifulSoup
 from openai import OpenAI
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # --- Config ---
 RSS_URL = "https://forums.everquest.com/index.php?forums/game-update-notes-live.9/index.rss"
 COMMANDS_DIR = Path("docs/projects/everquest/commands")
 STATE_FILE = Path(".cache/eq_feed_state.json")
 INITIAL_MAX_ID = 305891  # Don't process entries older than this on first run
+
+# Shared session: retries via urllib3; custom UA because the forum blocks python-requests' default
+SESSION = requests.Session()
+SESSION.headers.update({"User-Agent": "readguides-rss-monitor/1.0 (+https://github.com/RedGuides/readguides)"})
+_retry = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+SESSION.mount("https://", HTTPAdapter(max_retries=_retry))
+SESSION.mount("http://", HTTPAdapter(max_retries=_retry))
 
 TEMPLATE_GUIDE = """EverQuest command docs follow this template:
 ```markdown
@@ -57,6 +66,7 @@ Brief description.
 3.  **INFER FOR NEW COMMANDS**: For a **NEW** command only, if the patch notes describe it as being "similar" to an existing command, you should infer its syntax and options from the existing command's documentation.
 4.  **TIMELESS DOC**: Do not add "NEW" or "Updated" or "Now" or "added" or "changed" to the doc. This should be timeless.
 5.  **NO EMPTY SECTIONS**: If a section is empty, don't include it.
+6.  **NO OBVIOUS STATEMENTS**: Don't document self-evident behavior (e.g., "shows an error message on failure"). Only include details a reader couldn't assume.
 """
 
 # --- Core Functions ---
@@ -68,24 +78,36 @@ def get_deepseek_client():
     """Get or create DeepSeek API client."""
     global _deepseek_client
     if _deepseek_client is None:
-        _deepseek_client = OpenAI(api_key=os.environ["DEEPSEEK_API_KEY"], base_url="https://api.deepseek.com")
+        _deepseek_client = OpenAI(api_key=os.environ["DEEPSEEK_API_KEY"],
+                                  base_url="https://api.deepseek.com",
+                                  timeout=120.0, max_retries=3)
     return _deepseek_client
 
-def deepseek_chat(messages, temperature=1.0, max_tokens=8192, use_reasoner=False):
+def deepseek_chat(messages, reasoning_effort="none", temperature=None, model=None, max_tokens=8192, json_mode=False):
     """Call DeepSeek API using OpenAI SDK."""
     client = get_deepseek_client()
-    model = (
-        os.getenv("DEEPSEEK_REASONING_MODEL", "deepseek-v4-pro")
-        if use_reasoner
-        else os.getenv("DEEPSEEK_CHAT_MODEL", "deepseek-v4-flash")
-    )
-    resp = client.chat.completions.create(model=model, messages=messages, 
-                                          temperature=temperature, max_tokens=max_tokens)
-    return resp.choices[0].message.content.strip()
+    kwargs = {
+        "model": model or os.getenv("DEEPSEEK_MODEL", "deepseek-flash"),
+        "messages": messages,
+        "max_tokens": max_tokens,
+        "reasoning_effort": reasoning_effort,
+    }
+    if temperature is not None:
+        kwargs["temperature"] = temperature  # no effect while thinking is on
+    if json_mode:
+        kwargs["response_format"] = {"type": "json_object"}
+    resp = client.chat.completions.create(**kwargs)
+    return (resp.choices[0].message.content or "").strip()
 
 def fetch_thread_content(url):
     """Fetch full thread content from forum link."""
-    soup = BeautifulSoup(requests.get(url, timeout=30).text, 'html.parser')
+    try:
+        resp = SESSION.get(url, timeout=30)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        print(f"  [!] GET failed: {e}")
+        return None
+    soup = BeautifulSoup(resp.text, 'html.parser')
     article = soup.find('article', class_=lambda x: x and 'message-body' in x)
     if article:
         content = article.find('div', class_='bbWrapper') or article
@@ -110,16 +132,22 @@ def extract_commands_from_text(text):
     """Uses LLM to get a list of base slash commands from text."""
     print("-> Asking LLM to extract commands...")
     resp = deepseek_chat([
-        {"role": "system", "content": "You are an EverQuest command extractor. Return ONLY a JSON array of command names."},
-        {"role": "user", "content": f"Extract slash commands from these patch notes. For commands with args like '/examplecommand foo', return only base '/examplecommand'. Do not return commands from examples unless they appear in the patch notes.\n\nReturn ONLY JSON array: []\n\nPatch notes:\n{text}"}
-    ], temperature=0.0, max_tokens=512)
-    commands = filter_commands_mentioned_in_text(json.loads(resp), text)
+        {"role": "system", "content": 'You are an EverQuest command extractor. Return ONLY JSON like {"commands": ["/example"]}.'},
+        {"role": "user", "content": f"Extract slash commands from these patch notes. For commands with args like '/examplecommand foo', return only base '/examplecommand'. Do not return commands from examples unless they appear in the patch notes.\n\nReturn ONLY JSON object: {{\"commands\": []}}\n\nPatch notes:\n{text}"}
+    ], temperature=0.0, max_tokens=512, json_mode=True)
+    try:
+        data = json.loads(resp)
+        commands = data.get("commands", []) if isinstance(data, dict) else data
+    except json.JSONDecodeError:
+        print(f"  [!] Could not parse LLM reply as JSON: {resp[:120]!r}")
+        return []
+    commands = filter_commands_mentioned_in_text([c for c in commands if isinstance(c, str)], text)
     print(f"[OK] Extracted {len(commands)} commands: {commands}")
     return commands
 
 def extract_literal_commands(text):
     """Return base slash commands literally present in text."""
-    return {cmd.lower() for cmd in re.findall(r"(?<!\w)/([a-z][a-z0-9_]*)\b", text, flags=re.I)}
+    return {cmd.lower() for cmd in re.findall(r"(?<![\w/])/([a-z][a-z0-9_]*)\b", text, flags=re.I)}
 
 def filter_commands_mentioned_in_text(commands, text):
     """Drop extracted commands that are not present in the source text."""
@@ -138,12 +166,12 @@ def filter_commands_mentioned_in_text(commands, text):
     return filtered
 
 def generate_doc(cmd, text, existing_doc, related_docs=None):
-    """Generates the markdown for a single command using the LLM."""
+    """Generates the markdown for a single command; returns None when nothing notable changed."""
     if related_docs is None:
         related_docs = {}
     prompt = TEMPLATE_GUIDE + "\n\n"
     if existing_doc:
-        prompt += f"Command: {cmd}\nPatch notes:\n{text}\n\nExisting doc:\n```markdown\n{existing_doc}\n```\n\nGenerate the COMPLETE updated markdown. Preserve structure, update relevant sections. Return ONLY markdown."
+        prompt += f"Command: {cmd}\nPatch notes:\n{text}\n\nExisting doc:\n```markdown\n{existing_doc}\n```\n\nUpdate the doc with only notable information from the patch notes. Preserve the wording of sections they don't affect. If there's nothing notable to add or change (e.g. only self-evident behavior), reply with exactly NO_CHANGE. Return ONLY markdown or NO_CHANGE."
     else:
         prompt += f"New command: {cmd}\nPatch notes:\n{text}\n\n"
         if related_docs:
@@ -151,12 +179,16 @@ def generate_doc(cmd, text, existing_doc, related_docs=None):
             prompt += "\n".join(f"Reference `{name}`:\n```markdown\n{doc}\n```\n" for name, doc in related_docs.items())
         prompt += "\nDraft complete markdown following template. Return ONLY markdown."
     
+    # Writing is the quality-critical step: max thinking (model = DEEPSEEK_MODEL, default deepseek-flash).
     resp = deepseek_chat([
         {"role": "system", "content": "You are a technical writer for EverQuest commands. Generate markdown following all instructions."},
         {"role": "user", "content": prompt}
-    ], temperature=1.0, max_tokens=8192, use_reasoner=True)
+    ], reasoning_effort="max", max_tokens=32768)
     
-    return re.sub(r'(^```(?:markdown|md)?\s*\n?|\n?```\s*$)', '', resp.strip())
+    markdown = re.sub(r'(^```(?:markdown|md)?\s*\n?|\n?```\s*$)', '', resp.strip())
+    if markdown.strip().upper() == "NO_CHANGE":
+        return None
+    return markdown
 
 def find_similar_commands(cmd_name, cmd_map, max_results=5):
     """Find existing commands that are similar to cmd_name.
@@ -209,7 +241,7 @@ Answer with ONLY 'yes' or 'no'."""
     
     answer = resp.lower().strip()
     print(f"    -> LLM says: {answer}")
-    return answer == "yes"
+    return answer.startswith("yes")
 
 def find_related_docs_for_new_command(cmd_name, patch_text, cmd_map):
     """For new commands, find mentioned existing commands to use as reference."""
@@ -262,6 +294,9 @@ def process_text_for_commands(text, cmd_map):
         
         print(f"  -> Generating {'updated' if existing_doc else 'new'} doc...")
         markdown = generate_doc(cmd, text, existing_doc, related_docs)
+        if not markdown:
+            print(f"  -> Nothing notable for {cmd}, skipping\n")
+            continue
         if existing_doc and markdown.rstrip() == existing_doc.rstrip():
             print(f"  -> No meaningful changes for {cmd}, skipping\n")
             continue
@@ -284,8 +319,9 @@ def save_results(results):
     for r in results:
         cmd_name = r["command"].lstrip("/")
         filepath = r["existing_path"] if r["existing_path"] else COMMANDS_DIR / f"cmd-{cmd_name}.md"
-        filepath.write_text(r["markdown"], encoding="utf-8")
-        print(f"  -> {'Updated' if r['existing_path'] else 'Created'} {filepath} ({len(r['markdown'])} chars)")
+        markdown = r["markdown"].rstrip() + "\n"
+        filepath.write_text(markdown, encoding="utf-8")
+        print(f"  -> {'Updated' if r['existing_path'] else 'Created'} {filepath} ({len(markdown)} chars)")
     
     print(f"\n[OK] Saved {len(results)} doc(s)")
 
@@ -304,7 +340,7 @@ def process_rss_mode(cmd_map, limit=None):
     print(f"Starting RSS monitor{limit_msg}...")
     
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    state = json.loads(STATE_FILE.read_text()) if STATE_FILE.exists() else {"seen": [], "max_id": INITIAL_MAX_ID}
+    state = json.loads(STATE_FILE.read_text(encoding="utf-8")) if STATE_FILE.exists() else {"seen": [], "max_id": INITIAL_MAX_ID}
     
     # Ensure max_id exists in state (for legacy state files)
     if "max_id" not in state:
@@ -356,7 +392,12 @@ def process_rss_mode(cmd_map, limit=None):
         if numeric_id:
             state["max_id"] = max(state["max_id"], numeric_id)
         
-        results_for_entry = process_text_for_commands(text, cmd_map)
+        try:
+            results_for_entry = process_text_for_commands(text, cmd_map)
+        except Exception as e:
+            # Keep going; one bad entry shouldn't kill the whole run
+            print(f"  [!] Processing failed: {e}")
+            results_for_entry = []
         all_results.extend(results_for_entry)
         
         # Track this entry if it had command results
@@ -370,14 +411,14 @@ def process_rss_mode(cmd_map, limit=None):
     
     if new_ids:
         state["seen"] = (state["seen"] + new_ids)[-200:]
-        STATE_FILE.write_text(json.dumps(state, indent=2))
+        STATE_FILE.write_text(json.dumps(state, indent=2), encoding="utf-8")
         print(f"[OK] Updated state with {len(new_ids)} new entries, max_id={state['max_id']}")
     else:
         print("[i] No new entries")
     
     # Output for GitHub Actions
     if processed_entries and "GITHUB_OUTPUT" in os.environ:
-        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
             # Output patch notes as JSON for parsing in workflow
             f.write(f"patch_notes={json.dumps(processed_entries)}\n")
             print(f"[OK] Exported {len(processed_entries)} patch note link(s) to GITHUB_OUTPUT")
