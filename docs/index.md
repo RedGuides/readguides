@@ -30,7 +30,7 @@ You'll find many more scripts and plugins under [resources on the forums](https:
 ## Back to the Forums
 
 !!! abstract "Quick Starts"
-    • [Getting started with RedGuides and Very Vanilla MQ (video series)](https://www.redguides.com/community/resources/multiboxing-everquest-the-red-guide-videos.1603/)  
+    • [Getting started with RedGuides and Very Vanilla MQ (new user guide)](https://www.redguides.com/community/threads/redguides-nfo.95805/)  
     • Staff are ready to help in the [Questions forum](https://www.redguides.com/community/forums/requests-and-questions.19/). *If you have a membership issue, [contact us here](https://www.redguides.com/community/misc/contact).*  
 
 * [Forums](https://www.redguides.com/community/)  
