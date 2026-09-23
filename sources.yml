@@ -1,0 +1,306 @@
+# Documentation sources published under docs/projects/<slug>.
+# Generated once from .gitmodules by the Phase 1 generator, then maintained by hand.
+# See PLAN_manifest_sources.md and README.md for the field meanings.
+
+defaults:
+  docs_dir: docs
+  branch: master
+
+sources:
+  - slug: aqo
+    repo: https://github.com/Redbot/aqodocs.git
+    branch: readguides
+    upstream: https://github.com/aquietone/docs.git
+
+  - slug: artisansprize
+    repo: https://github.com/Redbot/miscdocs.git
+    branch: main
+    docs_dir: artisansprize
+
+  - slug: everquest
+    repo: https://github.com/RedGuides/everquest-docs.git
+    branch: main
+    docs_dir: .
+
+  - slug: kissassist
+    repo: https://github.com/RedGuides/kissassist.git
+    branch: main
+
+  - slug: macroquest
+    repo: https://github.com/Redbot/docs.git
+    branch: readguides
+    docs_dir: .
+    upstream: https://github.com/macroquest/docs.git
+
+  - slug: mq2aaspend
+    repo: https://github.com/RedGuides/MQ2AASpend.git
+
+  - slug: mq2advpath
+    repo: https://github.com/RedGuides/MQ2AdvPath.git
+
+  - slug: mq2afnuke
+    repo: https://github.com/RedGuides/MQ2AFNuke.git
+
+  - slug: mq2autoaccept
+    repo: https://github.com/RedGuides/MQ2AutoAccept.git
+
+  - slug: mq2autocamp
+    repo: https://github.com/RedGuides/MQ2AutoCamp.git
+
+  - slug: mq2autoclaim
+    repo: https://github.com/RedGuides/MQ2AutoClaim.git
+
+  - slug: mq2autoforage
+    repo: https://github.com/RedGuides/MQ2AutoForage.git
+
+  - slug: mq2autogroup
+    repo: https://github.com/RedGuides/MQ2AutoGroup.git
+
+  - slug: mq2autoloot
+    repo: https://github.com/RedGuides/MQ2AutoLoot.git
+
+  - slug: mq2autosize
+    repo: https://github.com/RedGuides/MQ2AutoSize.git
+
+  - slug: mq2bandolier
+    repo: https://github.com/RedGuides/MQ2Bandolier.git
+
+  - slug: mq2bardswap
+    repo: https://github.com/RedGuides/MQ2BardSwap.git
+
+  - slug: mq2boxr
+    repo: https://github.com/RedGuides/MQ2Boxr.git
+
+  - slug: mq2camera
+    repo: https://github.com/Redbot/MQ2Camera.git
+    branch: readguides
+    upstream: https://github.com/brainiac/MQ2Camera.git
+
+  - slug: mq2cast
+    repo: https://github.com/RedGuides/MQ2Cast.git
+
+  - slug: mq2clipboard
+    repo: https://github.com/RedGuides/MQ2Clipboard.git
+
+  - slug: mq2collections
+    repo: https://github.com/RedGuides/MQ2Collections.git
+
+  - slug: mq2cpuload
+    repo: https://github.com/RedGuides/MQ2CPULoad.git
+
+  - slug: mq2cursor
+    repo: https://github.com/RedGuides/MQ2Cursor.git
+
+  - slug: mq2cwtnbuffs
+    repo: https://github.com/jessebevil/CWTN.git
+    docs_dir: MQ2CWTNBuffs/docs
+
+  - slug: mq2dannet
+    repo: https://github.com/Redbot/MQ2Dan.git
+    branch: readguides
+    docs_dir: MQ2DanNet/docs
+    upstream: https://github.com/dannuic/MQ2Dan.git
+
+  - slug: mq2debuffs
+    repo: https://github.com/RedGuides/MQ2Debuffs.git
+
+  - slug: mq2discord
+    repo: https://github.com/RedGuides/MQ2Discord.git
+
+  - slug: mq2dpsadv
+    repo: https://github.com/RedGuides/MQ2DPSAdv.git
+
+  - slug: mq2easyfind
+    repo: https://github.com/Redbot/MQ2EasyFind.git
+    branch: readguides
+    upstream: https://github.com/brainiac/MQ2EasyFind.git
+
+  - slug: mq2eqbc
+    repo: https://github.com/RedGuides/MQ2EQBC.git
+
+  - slug: mq2events
+    repo: https://github.com/RedGuides/MQ2Events.git
+
+  - slug: mq2exchange
+    repo: https://github.com/RedGuides/MQ2Exchange.git
+
+  - slug: mq2farmtest
+    repo: https://github.com/RedGuides/MQ2FarmTest.git
+
+  - slug: mq2feedme
+    repo: https://github.com/RedGuides/MQ2FeedMe.git
+
+  - slug: mq2gmcheck
+    repo: https://github.com/RedGuides/MQ2GMCheck.git
+    upstream: https://github.com/MMOBugs/MQ2GMCheck.git
+
+  - slug: mq2grind
+    repo: https://github.com/cvanwie/MQ2Grind.git
+    branch: documentation
+
+  - slug: mq2groundspawns
+    repo: https://github.com/jessebevil/CWTN.git
+    docs_dir: MQ2GroundSpawns/docs
+
+  - slug: mq2groupinfo
+    repo: https://github.com/RedGuides/MQ2GroupInfo.git
+
+  - slug: mq2heals
+    repo: https://github.com/RedGuides/MQ2Heals.git
+
+  - slug: mq2hudmove
+    repo: https://github.com/RedGuides/MQ2HUDMove.git
+
+  - slug: mq2ice
+    repo: https://github.com/RedGuides/MQ2Ice.git
+
+  - slug: mq2itemscore
+    repo: https://github.com/RedGuides/MQ2ItemScore.git
+
+  - slug: mq2killtracker
+    repo: https://github.com/RedGuides/MQ2KillTracker.git
+
+  - slug: mq2kisstemplate
+    repo: https://github.com/RedGuides/MQ2KissTemplate.git
+
+  - slug: mq2linkdb
+    repo: https://github.com/RedGuides/MQ2LinkDB.git
+
+  - slug: mq2log
+    repo: https://github.com/RedGuides/MQ2Log.git
+
+  - slug: mq2lootmanager
+    repo: https://github.com/Redbot/MQ2LootManager.git
+    branch: readguides
+    upstream: https://github.com/jessebevil/MQ2LootManager.git
+
+  - slug: mq2medley
+    repo: https://github.com/RedGuides/MQ2Medley.git
+
+  - slug: mq2melee
+    repo: https://github.com/RedGuides/MQ2Melee.git
+
+  - slug: mq2moveutils
+    repo: https://github.com/RedGuides/MQ2MoveUtils.git
+
+  - slug: mq2mybuttons
+    repo: https://github.com/RedGuides/MQ2MyButtons.git
+
+  - slug: mq2nav
+    repo: https://github.com/Redbot/MQ2Nav.git
+    branch: readguides
+    docs_dir: doc
+    upstream: https://github.com/brainiac/MQ2Nav.git
+
+  - slug: mq2netbots
+    repo: https://github.com/RedGuides/MQ2NetBots.git
+
+  - slug: mq2notepad
+    repo: https://github.com/RedGuides/MQ2Notepad.git
+
+  - slug: mq2otd
+    repo: https://github.com/RedGuides/MQ2OTD.git
+
+  - slug: mq2paranoid
+    repo: https://github.com/RedGuides/MQ2Paranoid.git
+
+  - slug: mq2plattracker
+    repo: https://github.com/RedGuides/MQ2PlatTracker.git
+
+  - slug: mq2pluginmanager
+    repo: https://github.com/RedGuides/MQ2PluginManager.git
+
+  - slug: mq2portalsetter
+    repo: https://github.com/RedGuides/MQ2PortalSetter.git
+
+  - slug: mq2posse
+    repo: https://github.com/RedGuides/MQ2Posse.git
+
+  - slug: mq2raidutils
+    repo: https://github.com/RedGuides/MQ2RaidUtils.git
+
+  - slug: mq2rand
+    repo: https://github.com/RedGuides/MQ2Rand.git
+
+  - slug: mq2react
+    repo: https://github.com/RedGuides/MQ2React.git
+
+  - slug: mq2relaytells
+    repo: https://github.com/RedGuides/MQ2RelayTells.git
+
+  - slug: mq2relocate
+    repo: https://github.com/RedGuides/MQ2Relocate.git
+
+  - slug: mq2rewards
+    repo: https://github.com/RedGuides/MQ2Rewards.git
+
+  - slug: mq2rez
+    repo: https://github.com/RedGuides/MQ2Rez.git
+
+  - slug: mq2say
+    repo: https://github.com/RedGuides/MQ2Say.git
+
+  - slug: mq2spawnmaster
+    repo: https://github.com/RedGuides/MQ2SpawnMaster.git
+
+  - slug: mq2spawns
+    repo: https://github.com/RedGuides/MQ2Spawns.git
+
+  - slug: mq2spawnsort
+    repo: https://github.com/RedGuides/MQ2SpawnSort.git
+
+  - slug: mq2sqlite
+    repo: https://gitlab.com/Redbot/MQ2SQLite.git
+    branch: readguides
+    upstream: https://gitlab.com/Knightly1/mq2sqlite.git
+
+  - slug: mq2status
+    repo: https://github.com/RedGuides/MQ2Status.git
+
+  - slug: mq2targets
+    repo: https://github.com/RedGuides/MQ2Targets.git
+    upstream: https://github.com/MMOBugs/MQ2Targets.git
+
+  - slug: mq2tooltip
+    repo: https://github.com/RedGuides/MQ2ToolTip.git
+
+  - slug: mq2tracking
+    repo: https://github.com/RedGuides/MQ2Tracking.git
+
+  - slug: mq2tributemanager
+    repo: https://github.com/RedGuides/MQ2TributeManager.git
+
+  - slug: mq2tstrophy
+    repo: https://github.com/Redbot/MQ2TSTrophy.git
+    branch: readguides
+    upstream: https://github.com/RedGuides/MQ2TSTrophy.git
+
+  - slug: mq2twist
+    repo: https://github.com/RedGuides/MQ2Twist.git
+
+  - slug: mq2vendors
+    repo: https://github.com/RedGuides/MQ2Vendors.git
+
+  - slug: mq2worsthurt
+    repo: https://github.com/RedGuides/MQ2WorstHurt.git
+
+  - slug: mq2xassist
+    repo: https://github.com/RedGuides/MQ2XAssist.git
+
+  - slug: mq2xptracker
+    repo: https://github.com/RedGuides/MQ2XPTracker.git
+
+  - slug: mqitemcolor
+    repo: https://github.com/RedGuides/MQItemColor.git
+    branch: main
+
+  - slug: mqmountclassicmodels
+    repo: https://github.com/Redbot/MQMountClassicModels.git
+    branch: readguides
+    docs_dir: .
+    upstream: https://github.com/Knightly1/MQMountClassicModels.git
+
+  - slug: mqtexttospeech
+    repo: https://github.com/Redbot/MQTextToSpeech.git
+    branch: readguides
+    upstream: https://github.com/Knightly1/MQTextToSpeech.git

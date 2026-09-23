@@ -16,22 +16,30 @@ The "edit" button on any page of the site will ideally take you to the maintaine
 <details>
 <summary>... or you can DIY ...</summary>
 
-- Fork this repo.
-    - If your docs are in the root of your project's repository, add them as a submodule in the docs/projects/ directory.
-    - If your docs are in a subdirectory of your repository, you'll need to add them as a submodule in our vendor/ directory, and then symlink them to the docs/projects/ directory. Again, we're happy to do this for you.
-- Open a pull request.
+Every project on the site is one entry in [sources.yml](sources.yml). Add yours and open a pull request:
+
+```yaml
+  - slug: mq2yourplugin          # published at readguides.com/projects/mq2yourplugin, lowercase
+    repo: https://github.com/you/MQ2YourPlugin.git
+    branch: main                 # omit if it's master
+    docs_dir: docs               # omit if your docs are in docs/; use . for the repo root
+```
+
+A `.meta.yml` in your docs directory tells the "edit" button where to go; copy the one from MQ2EasyFind and adjust the repository name.
 
 </details>
 
 ## Running your own version
 
-The submodules in this repo require symlinks. If you're on a Microsoft product make sure to run the following commands to enable them,
-
-```powershell
-git -c core.symlinks=true clone --recurse-submodules https://github.com/RedGuides/readguides.git
+```
+git clone https://github.com/RedGuides/readguides.git
 cd readguides
-Get-ChildItem .\docs\projects -Force | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint } | Remove-Item -Force
-git checkout -- docs/projects
+pip install -r requirements.txt
+python automation/fetch_sources.py
+python gen_pages.py
+mkdocs serve
 ```
 
-run `python gen_pages.py` to generate some of the index files, and then you're ready to roll! Start a virtual environment -> `pip install -r requirements.txt` -> `mkdocs serve`
+`fetch_sources.py` clones every repository in `sources.yml` and copies each project's docs into `docs/projects/`. Use `--only <slug>` to refresh one project.
+
+`docs/projects/` is a build product. You can edit it to preview a change with `mkdocs serve`, but the next fetch overwrites it, so make the real change in the project's own repository.

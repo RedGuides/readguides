@@ -42,7 +42,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SUBMODULES_SSH_KEY }}
 
-      - name: Configure Git for SSH submodules
+      - name: Configure Git for SSH
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -51,10 +51,10 @@ jobs:
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
 
-      - name: Initialize everquest-docs submodule
+      - name: Clone everquest-docs
         run: |
-          git submodule sync -- docs/projects/everquest
-          git submodule update --init --recursive docs/projects/everquest
+          rm -rf docs/projects/everquest
+          git clone --branch main https://github.com/RedGuides/everquest-docs.git docs/projects/everquest
 
       - name: Set up Python
         uses: actions/setup-python@v5

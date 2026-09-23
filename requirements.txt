@@ -7,10 +7,8 @@ mkdocs-macros-plugin
 mkdocs-redirects
 mkdocs-gen-files
 eq_lexers
-# automation/update_submodules.py
-GitPython
-PyGithub
-python-gitlab
+# automation/fetch_sources.py, automation/sync_forks.py
+PyYAML
 # automation/generate_discussion_map.py
 pymysql
 sshtunnel

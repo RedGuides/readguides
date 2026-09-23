@@ -1,9 +1,11 @@
 # One-off Python scripts
 garbage/
 
+# Project docs copied in by automation/fetch_sources.py (a build product)
+docs/projects/*
+
 # MkDocs build files (if generated)
 site/
-docs/projects/macroquest/site/
 
 # Discussion mapper generated data
 thread_links.json

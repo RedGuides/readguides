@@ -1,22 +1,126 @@
-name: Build ReadGuides Documentation & Deploy via SSH
+name: Sync forks, build and deploy Read📖Guides
 
 on:
   push:
     branches: [ "master" ]
+  pull_request:
+    paths: [ "sources.yml" ]
+  schedule:
+    - cron: '0 6 * * *'
   workflow_dispatch:
+    inputs:
+      sync_forks:
+        description: 'Merge upstream into the forks before building'
+        required: false
+        type: boolean
+        default: false
+      sync_dry_run:
+        description: 'Sync forks without pushing'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
-concurrency:
-  group: readguides-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  build-and-deploy:
+  ####################################################################
+  #  Pull requests that touch sources.yml: check the manifest only.
+  #  Forks have no secrets, so private repos show up as warnings.
+  ####################################################################
+  validate:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    # Only run on the main repository, not on forks
-    if: github.repository == 'RedGuides/readguides'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install PyYAML
+        run: pip install PyYAML
+
+      - name: Validate sources.yml
+        run: python automation/fetch_sources.py --check
+
+  ####################################################################
+  #  Daily: merge upstream into every fork listed in sources.yml.
+  #  Never cancelled, so a push mid-run cannot stop it between forks.
+  ####################################################################
+  sync-forks:
+    if: >-
+      github.repository == 'RedGuides/readguides' &&
+      (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.sync_forks))
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    concurrency:
+      group: sync-forks
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # The deploy key has push access to every fork; the manifest holds HTTPS
+      # URLs, and the insteadOf rewrites send them over SSH with this key.
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.SUBMODULES_SSH_KEY }}
+
+      - name: Configure Git for SSH
+        run: |
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+          git config --global url."git@gitlab.com:".insteadOf "https://gitlab.com/"
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install PyYAML
+        run: pip install PyYAML
+
+      - name: Merge upstream into forks
+        id: sync
+        run: python automation/sync_forks.py ${{ inputs.sync_dry_run && '--dry-run' || '' }}
+
+      - name: Ask for help on the forum
+        if: always() && steps.sync.outputs.conflict_count != '' && steps.sync.outputs.conflict_count != '0' && !inputs.sync_dry_run
+        uses: RedGuides/redguides-reply@v1
+        env:
+          REDGUIDES_API_KEY: ${{ secrets.XF_DONOTREPLY_KEY }}
+        with:
+          thread-id: '95078'
+          message: |
+            Hi I'm from [URL=https://github.com/RedGuides/readguides/blob/master/automation/sync_forks.py]sync_forks.py[/URL], [URL=https://github.com/RedGuides/readguides]Read📖Guides[/URL]. Every day I merge upstream changes into our documentation forks, and today ${{ steps.sync.outputs.conflict_count }} of them need a human to resolve a merge conflict:
+
+            ${{ steps.sync.outputs.conflicts }}
+
+            Details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  ####################################################################
+  #  Fetch every source at its branch tip, build, deploy.
+  #  Runs after sync-forks on the schedule, alone on push and dispatch.
+  ####################################################################
+  build-and-deploy:
+    needs: sync-forks
+    # !cancelled() lets this run when sync-forks was skipped (push, dispatch)
+    # or failed: the site is built from whatever the branch tips are.
+    if: ${{ !cancelled() && github.repository == 'RedGuides/readguides' && github.event_name != 'pull_request' }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: build-${{ github.ref }}
+      cancel-in-progress: true
 
     env:
       # Environment variables for deployment and auth
@@ -32,42 +136,30 @@ jobs:
       REDGUIDES_DB_NAME: ${{ secrets.REDGUIDES_DB_NAME }}
 
     steps:
-      # Checkout source WITHOUT submodules first
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      # Setup SSH agent with keys for submodules and private dependencies
+      # Read access to the private documentation sources and the GitLab fork
       - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.9.1
         with:
-          ssh-private-key: |
-            ${{ secrets.SUBMODULES_SSH_KEY }}
-            ${{ secrets.READGUIDES_SSH_KEY }}
+          ssh-private-key: ${{ secrets.SUBMODULES_SSH_KEY }}
 
-      # Configure Git to use SSH for GitHub and GitLab submodules
-      - name: Configure Git for SSH submodules
+      # sources.yml holds HTTPS URLs; route them over SSH so private repos work
+      - name: Configure Git for SSH
         run: |
           git config --global url."git@github.com:".insteadOf "https://github.com/"
           git config --global url."git@gitlab.com:".insteadOf "https://gitlab.com/"
-          # Add known hosts
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
 
-      # Initialize submodules using SSH
-      - name: Initialize submodules
-        run: |
-          git submodule sync --recursive
-          git submodule update --init --recursive --depth=1
-
-      # Prepare Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      # (optional) Cache pip packages to speed-up subsequent runs
       - name: Cache pip packages
         uses: actions/cache@v4
         with:
@@ -76,30 +168,34 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      # Install MkDocs & plugins
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Generate documentation pages
+      # Every documentation source in sources.yml, at its branch tip, into docs/projects/
+      - name: Fetch documentation sources
+        run: python automation/fetch_sources.py
+
+      # Warn (never fail) about quick-list plugins that have no page here
+      - name: Check the Plugin Quick List for plugins without docs
+        run: python automation/check_quick_list.py
+
       - name: Generate documentation pages
         run: python gen_pages.py
 
-      # Add database host to known_hosts for discussion mapper
+      # Discussion map needs SSH access to the database host
       - name: Add database host to known_hosts
         run: |
           ssh-keyscan -H ${{ env.REDGUIDES_HOST }} >> ~/.ssh/known_hosts
 
-      # Generate discussion map (requires SSH access to database)
       - name: Generate discussion map
         run: python automation/generate_discussion_map.py
 
-      # Build the static site
+      # The gate: a broken page anywhere fails here and nothing below runs
       - name: Build readguides documentation
         run: mkdocs build --clean
 
-      # Create a tar.gz archive of the build
       - name: Compress artefact
         run: |
           tar -czf readguides_docs.tar.gz -C site .
@@ -108,12 +204,10 @@ jobs:
       #  SSH section – copy archive & unpack remotely
       ####################################################################
 
-      # (optional) Pre-accept host key to avoid the prompt
       - name: Add host to known_hosts
         run: |
           ssh-keyscan -H ${{ env.TARGET_HOST }} >> ~/.ssh/known_hosts
 
-      # Copy the archive over
       - name: Copy archive via scp
         run: |
           scp -o StrictHostKeyChecking=no readguides_docs.tar.gz \
@@ -128,35 +222,34 @@ jobs:
             # Use the variables defined in the workflow
             TARGET_DIR="${{ env.TARGET_DIR }}"
             TARGET_OWNER="${{ env.TARGET_OWNER }}"
-            
+
             # Check if variables are empty
             if [ -z "$TARGET_DIR" ] || [ -z "$TARGET_OWNER" ]; then
               echo "Error: TARGET_DIR or TARGET_OWNER is empty." >&2
               exit 1
             fi
-            
+
             echo "Deploying readguides documentation to $TARGET_DIR"
-            
+
             # Deployment commands
             sudo rm -rf "${TARGET_DIR}.new"
             sudo mkdir -p "${TARGET_DIR}.new"
             sudo tar -xzf /tmp/readguides_docs.tar.gz -C "${TARGET_DIR}.new"
             sudo chown -R "${TARGET_OWNER}" "${TARGET_DIR}.new"
-            
+
             if [ -d "${TARGET_DIR}" ]; then
               sudo mv "${TARGET_DIR}" "${TARGET_DIR}.old"
             fi
             sudo mv "${TARGET_DIR}.new" "${TARGET_DIR}"
-            
+
             sudo rm -rf "${TARGET_DIR}.old"
             sudo rm -f  /tmp/readguides_docs.tar.gz
-            
+
             echo "✅  ReadGuides documentation deploy complete"
           EOF
 
       # Purge Cloudflare cache for /docs only
       - name: Purge Cloudflare cache
-        # Only run if the previous steps were successful
         if: success()
         uses: NathanVaughn/actions-cloudflare-purge@master
         with:
