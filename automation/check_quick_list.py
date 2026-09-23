@@ -2,7 +2,8 @@
 """Warn when a MacroQuest Plugin Quick List plugin has no page here.
 
 Every plugin on the quick list (docs/projects/macroquest/main/plugin-quick-list.md, from the
-macroquest fork) should be a slug in sources.yml. Just a warning, the build never fails.
+macroquest fork) should be a slug in sources.yml, unless it is listed in NO_DOCS below. Just a
+warning, the build never fails.
 
 Run after fetch_sources.py, which fetches the quick list.
 """
@@ -22,6 +23,16 @@ QUICK_LIST = ROOT / "docs" / "projects" / "macroquest" / "main" / "plugin-quick-
 # Repos on the quick list that publish under a different slug.
 ALIASES = {
     "mq2dan": "mq2dannet",
+}
+
+# Repos on the quick list that RedGuides has decided not to document here. Lowercase repo name.
+NO_DOCS = {
+    "mq2autolootsort",
+    "mq2headshot",
+    "mq2meshmanager",
+    "mqgammaless",
+    "mqsearchitem",
+    "mqxworks",
 }
 
 CLONE_LINE = re.compile(r"^\s*git clone\b.*?(\S+?)(?:\.git)?\s+plugins/(\S+)\s*$")
@@ -44,13 +55,17 @@ def main() -> int:
         slugs = {s["slug"] for s in yaml.safe_load(fh)["sources"]}
 
     repos = quick_list_repos()
+    skipped = [(name, url) for name, url in repos if name.lower() in NO_DOCS]
     missing = [(name, url) for name, url in repos
-               if ALIASES.get(name.lower(), name.lower()) not in slugs]
+               if name.lower() not in NO_DOCS
+               and ALIASES.get(name.lower(), name.lower()) not in slugs]
 
-    print(f"Plugin Quick List: {len(repos)} plugins, {len(repos) - len(missing)} documented here")
+    print(f"Plugin Quick List: {len(repos)} plugins, {len(repos) - len(missing) - len(skipped)} "
+          f"documented here, {len(skipped)} not documented on purpose (NO_DOCS)")
     for name, url in missing:
         print(f"::warning title=Plugin without docs::{name} ({url}) is on the Plugin Quick List "
-              f"but has no entry in sources.yml")
+              f"but has no entry in sources.yml. Add one, or add the repo name to NO_DOCS in "
+              f"automation/check_quick_list.py if it should not be documented here.")
     if missing:
         print(f"{len(missing)} plugin(s) on the quick list have no page on this site.")
     return 0

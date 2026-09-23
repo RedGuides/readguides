@@ -107,6 +107,11 @@ sources:
   - slug: mq2discord
     repo: https://github.com/RedGuides/MQ2Discord.git
 
+  - slug: mq2dotnet
+    repo: https://github.com/Redbot/MQ2DotNet.git
+    branch: readguides
+    upstream: https://github.com/projecteon/MQ2DotNet.git
+
   - slug: mq2dpsadv
     repo: https://github.com/RedGuides/MQ2DPSAdv.git
 
@@ -240,6 +245,11 @@ sources:
   - slug: mq2say
     repo: https://github.com/RedGuides/MQ2Say.git
 
+  - slug: mq2shellcmd
+    repo: https://gitlab.com/Redbot/MQ2ShellCmd.git
+    branch: readguides
+    upstream: https://gitlab.com/Knightly1/MQ2ShellCmd.git
+
   - slug: mq2spawnmaster
     repo: https://github.com/RedGuides/MQ2SpawnMaster.git
 
@@ -281,6 +291,10 @@ sources:
   - slug: mq2vendors
     repo: https://github.com/RedGuides/MQ2Vendors.git
 
+  - slug: mq2wintitle
+    repo: https://github.com/RedGuides/MQ2WinTitle.git
+    upstream: https://github.com/MMOBugs/MQ2WinTitle.git
+
   - slug: mq2worsthurt
     repo: https://github.com/RedGuides/MQ2WorstHurt.git
 
@@ -289,6 +303,16 @@ sources:
 
   - slug: mq2xptracker
     repo: https://github.com/RedGuides/MQ2XPTracker.git
+
+  - slug: mqactorfollow
+    repo: https://github.com/Redbot/MQActorFollow.git
+    branch: readguides
+    upstream: https://github.com/peonMQ/MQActorFollow.git
+
+  - slug: mqcharinfo
+    repo: https://github.com/Redbot/MQCharInfo.git
+    branch: readguides
+    upstream: https://github.com/Cezero/MQCharInfo.git
 
   - slug: mqitemcolor
     repo: https://github.com/RedGuides/MQItemColor.git
@@ -299,6 +323,16 @@ sources:
     branch: readguides
     docs_dir: .
     upstream: https://github.com/Knightly1/MQMountClassicModels.git
+
+  - slug: mqremote
+    repo: https://github.com/Redbot/MQRemote.git
+    branch: readguides
+    upstream: https://github.com/peonMQ/MQRemote.git
+
+  - slug: mqrespawn
+    repo: https://github.com/Redbot/MQRespawn.git
+    branch: readguides
+    upstream: https://github.com/peonMQ/MQRespawn.git
 
   - slug: mqtexttospeech
     repo: https://github.com/Redbot/MQTextToSpeech.git
