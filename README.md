@@ -35,11 +35,11 @@ A `.meta.yml` in your docs directory tells the "edit" button where to go; copy t
 git clone https://github.com/RedGuides/readguides.git
 cd readguides
 pip install -r requirements.txt
-python automation/fetch_sources.py
+python automation/fetch_sources.py --skip-private
 python gen_pages.py
 mkdocs serve
 ```
 
-`fetch_sources.py` clones every repository in `sources.yml` and copies each project's docs into `docs/projects/`. Use `--only <slug>` to refresh one project.
+`fetch_sources.py` clones every repository in `sources.yml` and copies each project's docs into `docs/projects/`. There are a handful of private repos, `--skip-private` leaves them out. Use `--only <slug>` to refresh one project.
 
 `docs/projects/` is a build product. You can edit it to preview a change with `mkdocs serve`, but the next fetch overwrites it, so make the real change in the project's own repository.

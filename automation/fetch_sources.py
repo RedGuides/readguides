@@ -5,12 +5,11 @@ Each repo is shallow-cloned into a temp dir; each slug's docs_dir is copied to
 docs/projects/<slug>, then the clone is deleted. docs/projects/ is git-ignored:
 a build product, overwritten on every run.
 
-Authentication is left to git: the manifest holds plain HTTPS URLs, and the
-environment supplies access via insteadOf rewrites, an SSH agent or a
-credential helper. Five GitHub sources and the GitLab fork need that access.
+Sources that require credentials can be skipped with --skip-private 
 
 Usage:
     python automation/fetch_sources.py                     # everything
+    python automation/fetch_sources.py --skip-private      # public sources only, no credentials needed
     python automation/fetch_sources.py --only mq2nav --only aqo
     python automation/fetch_sources.py --check             # validate the manifest, clone nothing
 """
@@ -37,7 +36,7 @@ MANIFEST = ROOT / "sources.yml"
 PROJECTS = ROOT / "docs" / "projects"
 RETRIES = 2
 SLUG_RE = re.compile(r"[a-z0-9][a-z0-9_-]*")
-KNOWN_KEYS = {"slug", "repo", "branch", "docs_dir", "upstream", "upstream_branch"}
+KNOWN_KEYS = {"slug", "repo", "branch", "docs_dir", "upstream", "upstream_branch", "private"}
 
 _print_lock = threading.Lock()
 
@@ -54,6 +53,7 @@ class Source:
     branch: str
     docs_dir: str
     upstream: str | None = None
+    private: bool = False  # needs credentials to read; --skip-private leaves it out
 
 
 @dataclass
@@ -73,6 +73,7 @@ def load_manifest(only: list[str] | None) -> list[Source]:
     defaults = data.get("defaults", {})
     sources: list[Source] = []
     seen: set[str] = set()
+    private_by_repo: dict[str, bool] = {}
     for raw in data["sources"]:
         unknown = set(raw) - KNOWN_KEYS
         if unknown:
@@ -80,15 +81,20 @@ def load_manifest(only: list[str] | None) -> list[Source]:
         for key in ("slug", "repo"):
             if not raw.get(key):
                 sys.exit(f"sources.yml: entry {raw} is missing {key!r}")
+        if not isinstance(raw.get("private", False), bool):
+            sys.exit(f"sources.yml: {raw['slug']}: private must be true or false")
         src = Source(
             slug=str(raw["slug"]),
             repo=str(raw["repo"]),
             branch=str(raw.get("branch", defaults.get("branch", "master"))),
             docs_dir=str(raw.get("docs_dir", defaults.get("docs_dir", "docs"))),
             upstream=raw.get("upstream"),
+            private=raw.get("private", False),
         )
         if src.slug in seen:
             sys.exit(f"sources.yml: duplicate slug {src.slug!r}")
+        if private_by_repo.setdefault(src.repo, src.private) != src.private:
+            sys.exit(f"sources.yml: {src.slug}: every entry for {src.repo} must agree on private")
         if not SLUG_RE.fullmatch(src.slug):
             sys.exit(f"sources.yml: slug {src.slug!r} must be lowercase letters, digits, - or _")
         if not re.match(r"https://", src.repo):
@@ -187,11 +193,15 @@ def run_job(job: RepoJob, workdir: Path) -> None:
 # ---------------------------------------------------------------------------
 
 def check_job(job: RepoJob) -> str | None:
-    """Return a problem description, prefixed with 'warning:' when it may be a private repo."""
+    """Return a problem description, or None when the branch exists."""
     try:
         refs = git("ls-remote", "--heads", job.repo, job.branch)
     except RuntimeError as exc:
-        return f"warning: {job.repo}: unreachable without credentials ({exc.splitlines()[-1]})"
+        reason = str(exc).splitlines()[-1]
+        if job.slugs[0].private:  # load_manifest makes every slug of a repo agree
+            return f"{job.repo}: needs credentials ({reason}); run with --skip-private to leave private sources out"
+        return (f"{job.repo}: unreachable ({reason}); fix the URL, or mark its sources.yml entries "
+                f"'private: true' and run with --skip-private if it needs credentials")
     if not refs:
         return f"{job.repo}: branch {job.branch!r} does not exist"
     return None
@@ -200,14 +210,10 @@ def check_job(job: RepoJob) -> str | None:
 def run_check(jobs: list[RepoJob], workers: int) -> int:
     with ThreadPoolExecutor(max_workers=workers) as pool:
         problems = [p for p in pool.map(check_job, jobs) if p]
-    errors = [p for p in problems if not p.startswith("warning:")]
     for p in problems:
-        if p.startswith("warning:"):
-            log(f"::warning::{p[len('warning: '):]}")
-        else:
-            log(f"::error::{p}")
-    log(f"Checked {len(jobs)} repo(s): {len(errors)} error(s), {len(problems) - len(errors)} warning(s)")
-    return 1 if errors else 0
+        log(f"::error::{p}")
+    log(f"Checked {len(jobs)} repo(s): {len(problems)} error(s)")
+    return 1 if problems else 0
 
 
 # ---------------------------------------------------------------------------
@@ -220,16 +226,27 @@ def main() -> int:
                         help="fetch only this slug (repeatable)")
     parser.add_argument("--check", action="store_true",
                         help="validate sources.yml and that each repo/branch exists; clone nothing")
+    parser.add_argument("--skip-private", action="store_true",
+                        help="leave out sources marked private: true (they need credentials to read)")
     parser.add_argument("--jobs", type=int, default=8, help="parallel git operations (default 8)")
     args = parser.parse_args()
 
     sources = load_manifest(args.only)
+    skipped: list[Source] = []
+    if args.skip_private:
+        skipped = [s for s in sources if s.private]
+        sources = [s for s in sources if not s.private]
     jobs = group_by_repo(sources)
     if args.check:
-        log(f"sources.yml: {len(sources)} slug(s), {len(jobs)} repo(s), "
-            f"{sum(1 for s in sources if s.upstream)} fork(s)")
+        log(f"sources.yml: {len(sources) + len(skipped)} slug(s), {len(jobs)} repo(s) to check, "
+            f"{sum(1 for s in sources if s.upstream)} fork(s), {len(skipped)} private slug(s) skipped")
         return run_check(jobs, args.jobs)
 
+    if skipped:
+        log(f"Skipping {len(skipped)} private source(s): {', '.join(s.slug for s in skipped)}")
+    if not sources:
+        log("Nothing to fetch.")
+        return 0
     log(f"Fetching {len(sources)} slug(s) from {len(jobs)} repo(s) with {args.jobs} worker(s)")
     workdir = Path(tempfile.mkdtemp(prefix="readguides-sources-"))
     failures: list[str] = []

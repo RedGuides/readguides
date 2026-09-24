@@ -26,7 +26,7 @@ permissions:
 jobs:
   ####################################################################
   #  Pull requests that touch sources.yml: check the manifest only.
-  #  Forks have no secrets, so private repos show up as warnings.
+  #  Forks have no secrets, so sources marked private: true are skipped.
   ####################################################################
   validate:
     if: github.event_name == 'pull_request'
@@ -46,7 +46,7 @@ jobs:
         run: pip install PyYAML
 
       - name: Validate sources.yml
-        run: python automation/fetch_sources.py --check
+        run: python automation/fetch_sources.py --check --skip-private
 
   ####################################################################
   #  Daily: merge upstream into every fork listed in sources.yml.

@@ -1,6 +1,4 @@
 # Documentation sources published under docs/projects/<slug>.
-# Generated once from .gitmodules by the Phase 1 generator, then maintained by hand.
-# See PLAN_manifest_sources.md and README.md for the field meanings.
 
 defaults:
   docs_dir: docs
@@ -25,6 +23,7 @@ sources:
   - slug: kissassist
     repo: https://github.com/RedGuides/kissassist.git
     branch: main
+    private: true
 
   - slug: macroquest
     repo: https://github.com/Redbot/docs.git
@@ -40,6 +39,7 @@ sources:
 
   - slug: mq2afnuke
     repo: https://github.com/RedGuides/MQ2AFNuke.git
+    private: true
 
   - slug: mq2autoaccept
     repo: https://github.com/RedGuides/MQ2AutoAccept.git
@@ -94,6 +94,7 @@ sources:
   - slug: mq2cwtnbuffs
     repo: https://github.com/jessebevil/CWTN.git
     docs_dir: MQ2CWTNBuffs/docs
+    private: true
 
   - slug: mq2dannet
     repo: https://github.com/Redbot/MQ2Dan.git
@@ -142,16 +143,19 @@ sources:
   - slug: mq2grind
     repo: https://github.com/cvanwie/MQ2Grind.git
     branch: documentation
+    private: true
 
   - slug: mq2groundspawns
     repo: https://github.com/jessebevil/CWTN.git
     docs_dir: MQ2GroundSpawns/docs
+    private: true
 
   - slug: mq2groupinfo
     repo: https://github.com/RedGuides/MQ2GroupInfo.git
 
   - slug: mq2heals
     repo: https://github.com/RedGuides/MQ2Heals.git
+    private: true
 
   - slug: mq2hudmove
     repo: https://github.com/RedGuides/MQ2HUDMove.git
