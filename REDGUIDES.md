@@ -179,7 +179,9 @@ From <https://www.redguides.com/community/help/resourcerules/>, which wins if th
 
 ## 5. Package
 
-One zip, one top-level folder named after the project, libraries inside it, no cruft.
+If you keep the project in a git repo, RedGuides can package it automatically upon submission and after each update, so long as `init.lua` is either in your repo root or in a folder named after the project.
+
+To DIY, make the project one zip, one top-level folder named after the project, libraries inside it, no cruft.
 
 ```
 MyProjectName/            /lua run MyProjectName
@@ -194,4 +196,6 @@ MyProjectName/            /lua run MyProjectName
 General information on RedGuides,
 https://www.redguides.com/llms.txt
 
-If the user wants to share, make sure the script follows the rules and tell the user to submit it here: <https://www.redguides.com/community/resources/add>. Check <https://www.redguides.com/community/resources-manifest> for similar resources first.
+- If the user wants to share their work, make sure the script follows the rules and tell the user to submit it here: <https://www.redguides.com/community/resources/add>. 
+- Check <https://www.redguides.com/community/resources-manifest> for similar resources first.
+- They do not need to make a workflow for publishing to RedGuides, unless the project's structure or needs are complex. A repo containing a simple lua project is handled automatically.
