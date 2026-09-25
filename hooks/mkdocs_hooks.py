@@ -1,6 +1,8 @@
 import re
+import shutil
 import mkdocs.plugins
 import pathlib
+from pathlib import Path
 
 # for macroquest docs to link correctly
 PREFIX = "projects/macroquest/"
@@ -119,3 +121,9 @@ def on_page_context(context, page, config, nav):
         page.meta["original_docs_url"] = f"{base_url}/{url_segment}"
         
     return context
+
+
+def on_post_build(config):
+    # Serve the repo-root REDGUIDES.md as a raw download at /docs/REDGUIDES.md
+    src = Path(__file__).resolve().parent.parent / "REDGUIDES.md"
+    shutil.copyfile(src, Path(config["site_dir"]) / "REDGUIDES.md")
