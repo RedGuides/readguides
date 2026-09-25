@@ -2,6 +2,8 @@
 search:
     exclude: true
 ---
+
+# Scripts
 <!-- material/tags { include: [script], toc: false } -->
 <style>
 /* Hide tag listing but keep the page as a valid destination */
