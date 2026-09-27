@@ -12,10 +12,9 @@ cd readguides && pip install -r requirements.txt && python automation/fetch_sour
 git clone https://github.com/macroquest/mq-definitions.git # LuaLS type annotations for the whole MQ Lua API
 ```
 
-- **mq-definitions** is the authority on what exists: every TLO, datatype member, ImGui binding, parameter and return type. It wins over the docs.
-- **readguides** explains behaviour. The fetch step writes every project's Markdown to `docs/projects/` (build product; corrections go upstream). `projects/macroquest/lua/` covers the `mq` module, events and binds, actors, spawn filtering, saving settings; `projects/macroquest/reference/` the TLOs, datatypes, commands and spawn-search syntax; `projects/<name>/` each plugin and script (`mq2nav`, `mq2dannet`, `mq2eqbc`, `mq2cast`, `mq2moveutils`, ...).
-- **The user's install**: the folder holding `MacroQuest.exe`. `lua/` scripts (one folder each), `config/` settings, `macros/`, `plugins/`, `lua/examples/`. Users may run several installs.
-- **Ask before writing:** which install, which class or classes, solo, group or raid, which plugins it may lean on, and what should trigger it.
+- **mq-definitions** the definitive set of Lua code definitions for Macroquest, ImGui Lua Bindings w/custom features, and Macroquest core Lua helpers. 
+- **readguides** docs for macroquest and community-written plugins. The fetch step writes every project's Markdown to `docs/projects/` (build product; corrections go upstream). `projects/macroquest/lua/` covers the `mq` module, `projects/macroquest/reference/` core TLOs, datatypes, commands and spawn-search; `projects/<name>/` community plugins (`mq2nav`, `mq2dannet`, `mq2cast`, `mq2remote`, ...).
+- **The user's install**: the folder holding `MacroQuest.exe`. `lua/` scripts (one folder each), `config/` settings, `macros/`, `plugins/`. Users may run several installs for different server types.
 - **Testing happens in the game client, by the human.** Give them `/lua run <folder>`, `/lua stop <folder>`, `/lua ps`, `/lua info <folder>`.
 - **Examples**: complete scripts ship in the install's `lua/examples/`, also at <https://github.com/macroquest/macroquest/tree/master/src/plugins/lua/lua/examples>. Read them before writing.
 - **Claude Code users**: MacroQuest ships a `/mq` command with its own research and coding agents, documented at <https://www.redguides.com/docs/projects/macroquest/main/claude-code-integration/> or from the fetch above, `docs/projects/macroquest/ai_helpers/claude/`.
