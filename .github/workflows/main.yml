@@ -102,7 +102,7 @@ jobs:
         with:
           thread-id: '95078'
           message: |
-            Hi I'm from [URL=https://github.com/RedGuides/readguides/blob/master/automation/sync_forks.py]sync_forks.py[/URL], [URL=https://github.com/RedGuides/readguides]Read📖Guides[/URL]. Every day I merge upstream changes into our documentation forks, and today ${{ steps.sync.outputs.conflict_count }} of them need a human to resolve a merge conflict:
+            Hi I'm from [URL=https://github.com/RedGuides/readguides/blob/master/automation/sync_forks.py]sync_forks.py[/URL], [URL=https://github.com/RedGuides/readguides]Read📖Guides[/URL]. Every day I merge upstream changes into our documentation forks, and today ${{ steps.sync.outputs.conflict_count }} of them need a human, for a merge conflict or a renderMember call I can't convert:
 
             ${{ steps.sync.outputs.conflicts }}
 

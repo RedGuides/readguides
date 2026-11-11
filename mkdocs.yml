@@ -55,7 +55,8 @@ plugins:
   - awesome-nav
   - glightbox
   - include-markdown
-  - macros
+  - macros:
+      on_error_fail: true  # a macro error fails the build instead of deploying an error page
   - meta
   - privacy
   - tags
@@ -68,6 +69,7 @@ markdown_extensions:
 - admonition
 - attr_list
 - def_list
+- eq_markdown.member
 - footnotes
 - md_in_html
 - toc:

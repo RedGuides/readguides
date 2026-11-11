@@ -7,6 +7,7 @@ mkdocs-macros-plugin
 mkdocs-redirects
 mkdocs-gen-files
 eq_lexers
+eq_markdown>=0.1.1
 # automation/fetch_sources.py, automation/sync_forks.py
 PyYAML
 # automation/generate_discussion_map.py

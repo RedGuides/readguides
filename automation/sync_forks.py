@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
-"""Merge upstream into every fork listed in sources.yml and push the result.
+"""Merge upstream into each fork in sources.yml and push.
 
-A fork is any manifest entry with an ``upstream`` key. Each fork is cloned with
-full history into a temporary directory, the upstream branch is merged into the
-branch named in the manifest, and the merge is pushed back to the fork. A
-conflict aborts the merge for that fork only; it is reported in the summary and
-written to $GITHUB_OUTPUT so the workflow can ask a human for help. Nothing in
-this repository is modified.
+A fork is a sources.yml entry with an `upstream` key. Each one is cloned to a
+temp dir, upstream is merged into its branch, and the merge is pushed back.
 
-Authentication is left to git: the manifest holds plain HTTPS URLs and the
-workflow's insteadOf rewrites plus SSH agent supply push access.
+renderMember calls in the fork's docs are then converted to `/// member`
+blocks (migrate_rendermember.py) and committed. readguides has no renderMember
+macro, so a leftover call breaks the site build.
 
-Usage:
-    python automation/sync_forks.py             # merge and push
-    python automation/sync_forks.py --dry-run   # merge and report, never push
+A fork with a merge conflict, or a call the converter can't handle, isn't
+pushed. It goes to $GITHUB_OUTPUT so the workflow can post about it.
+
+Push access comes from the workflow's insteadOf rewrite and ssh-agent. The
+URLs in sources.yml are plain HTTPS.
+
+    python automation/sync_forks.py
+    python automation/sync_forks.py --dry-run     # don't push
     python automation/sync_forks.py --only mq2nav
 """
 
@@ -21,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import shutil
 import stat
 import subprocess
@@ -31,8 +34,18 @@ from pathlib import Path
 
 import yaml
 
+from migrate_rendermember import migrate_file
+
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = ROOT / "sources.yml"
+
+# renderMember still inside {{ }} or {% %}
+RE_LEFTOVER = re.compile(r"\{[{%][^}]*?\brenderMember\s*\(")
+CONVERT_MESSAGE = (
+    "docs: replace renderMember with member blocks\n\n"
+    "Converted by automation/sync_forks.py after merging upstream."
+)
+STUCK = ("conflict", "unconverted")
 
 
 @dataclass
@@ -42,6 +55,7 @@ class Fork:
     upstream: str
     upstream_branch: str | None
     slugs: list[str] = field(default_factory=list)
+    docs_dirs: list[str] = field(default_factory=list)
 
     @property
     def name(self) -> str:
@@ -51,13 +65,9 @@ class Fork:
 @dataclass
 class Result:
     fork: Fork
-    status: str  # unchanged | merged | pushed | conflict | error
+    status: str  # unchanged | merged | pushed | conflict | unconverted | error
     detail: str = ""
 
-
-# ---------------------------------------------------------------------------
-# Manifest
-# ---------------------------------------------------------------------------
 
 def load_forks(only: list[str] | None) -> list[Fork]:
     with MANIFEST.open(encoding="utf-8") as fh:
@@ -75,14 +85,11 @@ def load_forks(only: list[str] | None) -> list[Fork]:
         if (fork.branch, fork.upstream) != (branch, raw["upstream"]):
             sys.exit(f"sources.yml: {raw['repo']} has inconsistent branch/upstream across slugs")
         fork.slugs.append(raw["slug"])
+        fork.docs_dirs.append(raw.get("docs_dir", defaults.get("docs_dir", "docs")))
     if only and not forks:
         sys.exit(f"--only: none of {', '.join(only)} is a fork")
     return list(forks.values())
 
-
-# ---------------------------------------------------------------------------
-# Git
-# ---------------------------------------------------------------------------
 
 def git(*args: str, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
@@ -104,11 +111,32 @@ def resolve_upstream_branch(fork: Fork, cwd: Path) -> str:
     raise RuntimeError(f"cannot determine the default branch of {fork.upstream}")
 
 
+def convert_render_member(fork: Fork, dest: Path) -> tuple[list[str], list[str]]:
+    """Returns (converted files, files that still call renderMember)."""
+    converted: list[str] = []
+    left: list[str] = []
+    for docs_dir in dict.fromkeys(fork.docs_dirs):
+        for path in sorted((dest / docs_dir).rglob("*.md")):
+            rel = path.relative_to(dest)
+            if ".git" in rel.parts or b"renderMember" not in path.read_bytes():
+                continue
+            try:
+                count, _ = migrate_file(path)
+                remaining = RE_LEFTOVER.search(path.read_text(encoding="utf-8"))
+            except UnicodeDecodeError:
+                count, remaining = 0, True
+            if count:
+                converted.append(rel.as_posix())
+            if remaining:
+                left.append(rel.as_posix())
+    return converted, left
+
+
 def sync_fork(fork: Fork, workdir: Path, dry_run: bool) -> Result:
     dest = workdir / fork.name
     print(f"::group::{fork.repo} ({fork.branch})  <-  {fork.upstream}", flush=True)
     try:
-        # Full history on both sides: a merge needs the common ancestor.
+        # no --depth, the merge needs the common ancestor
         git("clone", "--quiet", "--branch", fork.branch, "--single-branch", fork.repo, str(dest), cwd=workdir)
         git("remote", "add", "upstream", fork.upstream, cwd=dest)
         upstream_branch = resolve_upstream_branch(fork, dest)
@@ -121,23 +149,36 @@ def sync_fork(fork: Fork, workdir: Path, dry_run: bool) -> Result:
         if merge.returncode != 0:
             conflicts = git("diff", "--name-only", "--diff-filter=U", cwd=dest).stdout.split()
             git("merge", "--abort", cwd=dest, check=False)
-            detail = ", ".join(conflicts) or (merge.stderr.strip().splitlines() or ["merge failed"])[-1]
-            print(f"::error::merge conflict in {fork.repo}: {detail}")
+            files = ", ".join(conflicts) or (merge.stderr.strip().splitlines() or ["merge failed"])[-1]
+            detail = f"merge conflict in {files}"
+            print(f"::error::{fork.repo}: {detail}")
             return Result(fork, "conflict", detail)
         print(merge.stdout.strip())
+
+        converted, left = convert_render_member(fork, dest)
+        if left:
+            detail = f"renderMember calls the converter can't handle in {', '.join(left)}"
+            print(f"::error::{fork.repo}: {detail}")
+            return Result(fork, "unconverted", detail)
+        if converted:
+            print(f"\nconverted renderMember in {len(converted)} file(s):")
+            print("\n".join(f"  {name}" for name in converted))
+            git("add", "--", *converted, cwd=dest)
+            git("commit", "--quiet", "-m", CONVERT_MESSAGE, cwd=dest)
+        note = f", renderMember converted in {len(converted)} file(s)" if converted else ""
         after = git("rev-parse", "HEAD", cwd=dest).stdout.strip()
 
-        print(f"\n--- what {fork.branch} carries relative to upstream/{upstream_branch}:")
+        print(f"\n{fork.branch} vs upstream/{upstream_branch}:")
         stat_out = git("diff", "--stat", f"upstream/{upstream_branch}...{fork.branch}", cwd=dest).stdout.strip()
-        print(stat_out or "(nothing: identical to upstream)")
+        print(stat_out or "(no differences)")
 
         if before == after:
             return Result(fork, "unchanged")
         count = git("rev-list", "--count", f"{before}..{after}", cwd=dest).stdout.strip()
         if dry_run:
-            return Result(fork, "merged", f"{count} new commit(s), not pushed (dry run)")
+            return Result(fork, "merged", f"{count} new commit(s){note}, not pushed (dry run)")
         git("push", "--quiet", "origin", f"{fork.branch}:{fork.branch}", cwd=dest)
-        return Result(fork, "pushed", f"{count} new commit(s)")
+        return Result(fork, "pushed", f"{count} new commit(s){note}")
     except subprocess.CalledProcessError as exc:
         detail = (exc.stderr or exc.stdout or "").strip().splitlines()
         detail = detail[-1] if detail else f"git {' '.join(exc.cmd[1:3])} failed"
@@ -150,24 +191,20 @@ def sync_fork(fork: Fork, workdir: Path, dry_run: bool) -> Result:
         print("::endgroup::", flush=True)
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-
 def rmtree_force(path: Path) -> None:
-    def on_error(func, target, _exc):  # read-only files inside .git on Windows
+    def on_error(func, target, _exc):  # .git has read-only files on Windows
         os.chmod(target, stat.S_IWRITE)
         func(target)
     shutil.rmtree(path, onerror=on_error)
 
 
-def write_outputs(results: list[Result]) -> None:
-    conflicts = [r for r in results if r.status == "conflict"]
-    summary = "; ".join(f"{r.fork.repo.removeprefix('https://')} ({r.fork.branch}): {r.detail}" for r in conflicts)
-    if "GITHUB_OUTPUT" in os.environ:
-        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-            fh.write(f"conflicts={summary}\n")
-            fh.write(f"conflict_count={len(conflicts)}\n")
+def write_outputs(stuck: list[Result]) -> None:
+    if "GITHUB_OUTPUT" not in os.environ:
+        return
+    summary = "; ".join(f"{r.fork.repo.removeprefix('https://')} ({r.fork.branch}): {r.detail}" for r in stuck)
+    with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+        fh.write(f"conflicts={summary}\n")
+        fh.write(f"conflict_count={len(stuck)}\n")
 
 
 def main() -> int:
@@ -188,14 +225,14 @@ def main() -> int:
     for r in results:
         line = f"  {r.status:9}  {r.fork.repo}"
         print(f"{line}  {r.detail}" if r.detail else line)
-    write_outputs(results)
 
+    stuck = [r for r in results if r.status in STUCK]
     errors = [r for r in results if r.status == "error"]
-    conflicts = [r for r in results if r.status == "conflict"]
-    if conflicts:
-        print(f"\n{len(conflicts)} fork(s) need a human to resolve a merge conflict.")
+    write_outputs(stuck)
+    if stuck:
+        print(f"\n{len(stuck)} fork(s) not pushed: merge conflict or renderMember that wouldn't convert.")
     if errors:
-        print(f"\n{len(errors)} fork(s) FAILED for reasons other than a conflict.")
+        print(f"\n{len(errors)} fork(s) FAILED.")
         return 1
     return 0
 

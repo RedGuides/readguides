@@ -306,11 +306,11 @@ def generate_type_item(entry: Dict, item_type: str, output_file_path: str, docs_
                 f"{{% include-markdown \"{macro_path}\" start=\"{forms_start}\" end=\"{forms_end}\" heading-offset=1 %}}"
             )
         
-        # Link references
+        # Link references. Some sources indent these under the Members list; indented here they'd be a code block.
         linkrefs_start, linkrefs_end = "<!--tlo-linkrefs-start-->", "<!--tlo-linkrefs-end-->"
         if linkrefs_start in content and linkrefs_end in content:
             content_includes.append(
-                f"{{% include-markdown \"{macro_path}\" start=\"{linkrefs_start}\" end=\"{linkrefs_end}\" %}}"
+                f"{{% include-markdown \"{macro_path}\" start=\"{linkrefs_start}\" end=\"{linkrefs_end}\" dedent=true %}}"
             )
     else:  # datatype
         # Members block
@@ -320,11 +320,11 @@ def generate_type_item(entry: Dict, item_type: str, output_file_path: str, docs_
                 f"{{% include-markdown \"{macro_path}\" start=\"{members_start}\" end=\"{members_end}\" heading-offset=1 %}}"
             )
         
-        # Link references
+        # Link references, dedented as above
         linkrefs_start, linkrefs_end = "<!--dt-linkrefs-start-->", "<!--dt-linkrefs-end-->"
         if linkrefs_start in content and linkrefs_end in content:
             content_includes.append(
-                f"{{% include-markdown \"{macro_path}\" start=\"{linkrefs_start}\" end=\"{linkrefs_end}\" %}}"
+                f"{{% include-markdown \"{macro_path}\" start=\"{linkrefs_start}\" end=\"{linkrefs_end}\" dedent=true %}}"
             )
     
     if content_includes:
