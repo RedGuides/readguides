@@ -74,8 +74,6 @@ markdown_extensions:
 - md_in_html
 - toc:
     permalink: true
-- pymdownx.arithmatex:
-    generic: true
 - pymdownx.betterem:
     smart_enable: all
 - pymdownx.caret
