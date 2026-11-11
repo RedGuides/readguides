@@ -24,6 +24,8 @@ const imagesWithCaptions = [
   },
 ];
 
+// run on every page change (document$ is Material's page-load observable)
+document$.subscribe(function () {
 // Pick a random entry
 const randomIndex = Math.floor(Math.random() * imagesWithCaptions.length);
 const chosenImage = imagesWithCaptions[randomIndex];
@@ -31,8 +33,8 @@ const chosenImage = imagesWithCaptions[randomIndex];
 // Locate the placeholder in your HTML/Markdown where the random image should appear
 const placeholder = document.getElementById('random-image-spot');
 
-// If placeholder exists, add <figure> with <img> and <figcaption>
-if (placeholder) {
+// If placeholder exists and is still empty, add <figure> with <img> and <figcaption>
+if (placeholder && !placeholder.hasChildNodes()) {
   const figure = document.createElement('figure');
   figure.setAttribute('markdown', '1');
   // Add a style for centering
@@ -84,3 +86,4 @@ if (placeholder) {
     slideEffect: 'slide'
   });
 }
+});

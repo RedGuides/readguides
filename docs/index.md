@@ -18,14 +18,56 @@ You'll find many more scripts and plugins under [resources on the forums](https:
 ## Docs Navigation
 
 
-* [EverQuest](projects/everquest/index.md)
-* [MacroQuest](projects/macroquest/index.md)
-* [Plugins](plugins/index.md)
-* [Scripts](scripts/index.md)
-* Reference
-    - [All Commands](commands/)
-    - [All TLOs](tlos/)
-    - [All Data Types](datatypes/)
+<div class="grid cards" markdown>
+
+-   :fontawesome-solid-dragon:{ .lg .middle } **[EverQuest](projects/everquest/index.md)**
+
+    ---
+
+    [Commands](projects/everquest/commands/index.md) ·
+    [Configuration](projects/everquest/configuration.md)
+
+-   :material-console:{ .lg .middle } **[MacroQuest](projects/macroquest/index.md)**
+
+    ---
+
+    [Commands](projects/macroquest/reference/commands/README.md) ·
+    [TLOs](projects/macroquest/reference/top-level-objects/README.md) ·
+    [Data Types](projects/macroquest/reference/data-types/README.md) ·
+    [Lua](projects/macroquest/lua/README.md) ·
+    [Macros](projects/macroquest/macros/README.md)
+
+-   :material-puzzle:{ .lg .middle } **[Plugins](plugins/index.md)**
+
+    ---
+
+    [Core Plugins](projects/macroquest/plugins/core-plugins/README.md) ·
+    [All plugins](plugins/index.md)
+
+-   :material-script-text-outline:{ .lg .middle } **[Scripts](scripts/index.md)**
+
+    ---
+
+    [Artisan's Prize](projects/artisansprize/index.md) ·
+    [BoxHUD](projects/aqo/boxhud/README.md) ·
+    [Chase](projects/aqo/chase/README.md) ·
+    [Condition Builder](projects/aqo/condbuilder/README.md) ·
+    [Event Manager](projects/aqo/lem/README.md) ·
+    [Find Item Window](projects/aqo/find/README.md) ·
+    [KissAssist](projects/kissassist/index.md) ·
+    [Loot N Scoot](projects/aqo/lootnscoot/README.md) ·
+    [Lua Expression Evaluator](projects/aqo/eval/README.md) ·
+    [MAUI](projects/aqo/maui/README.md)
+
+-   :material-bookshelf:{ .lg .middle } **Reference**
+
+    ---
+
+    [All Commands](commands/index.md) ·
+    [All TLOs](tlos/index.md) ·
+    [All Data Types](datatypes/index.md)
+
+</div>
 
 ## Back to the Forums
 

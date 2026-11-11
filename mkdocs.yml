@@ -17,6 +17,7 @@ theme:
     - navigation.instant
     - navigation.instant.prefetch
     - navigation.instant.progress
+    - navigation.prune
     - search.suggest
   palette:
     - media: "(prefers-color-scheme)"
@@ -43,6 +44,18 @@ theme:
     admonition:
       abstract: material/torch
 
+extra:
+  social:
+    - icon: material/forum
+      link: https://www.redguides.com/community/
+      name: RedGuides forums
+    - icon: fontawesome/brands/discord
+      link: https://www.redguides.com/community/rg-discord/
+      name: RedGuides Discord
+    - icon: fontawesome/brands/github
+      link: https://github.com/RedGuides/
+      name: RedGuides on GitHub
+
 extra_css:
   - stylesheets/extra.css
 
@@ -51,7 +64,10 @@ hooks:
   - hooks/optional_hooks.py
 
 plugins:
-  - search
+  - search:
+      # Split on punctuation and ${ } so Me.PctHPs matches ${Me.PctHPs}.
+      # Dots, slashes and camelCase stay whole: splitting them hid mq2nav and /plugin.
+      separator: '[\s\-,:!=\[\]{}()"$]+|&[lg]t;'
   - awesome-nav
   - glightbox
   - include-markdown
