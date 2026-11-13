@@ -39,7 +39,7 @@ You'll find many more scripts and plugins under [resources on the forums](https:
     [Languages](projects/macroquest/reference/general/languages.md)
     [Spawn Heights](projects/macroquest/reference/general/list-of-spawn-heights.md)
 
--   :material-console:{ .lg .middle } **[MacroQuest](projects/macroquest/index.md)**
+-   :fontawesome-solid-shield-halved:{ .lg .middle } **[MacroQuest](projects/macroquest/index.md)**
 
     ---
 
