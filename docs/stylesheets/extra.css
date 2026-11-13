@@ -56,6 +56,16 @@ body[data-md-color-scheme=slate] .md-tabs {
     background-color: rgba(22, 23, 29,0.6) !important;
 }
 
+/* home page cards */
+.md-typeset .nav-cards a {
+    white-space: nowrap;
+}
+
+.md-typeset .nav-cards li > p > a:not(:last-child)::after {
+    content: " ·";
+    color: var(--md-default-fg-color--light);
+}
+
 /* Maximum space for text block */
 .md-grid {
     max-width: 100%;

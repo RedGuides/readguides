@@ -69,6 +69,7 @@ nav:
     - projects/aqo/*
     - projects/artisansprize
   - Reference:
+    - reference/index.md
     - All Commands: commands
     - All TLOs: tlos
     - All Data Types: datatypes
